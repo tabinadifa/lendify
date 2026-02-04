@@ -19,3 +19,7 @@ Route::prefix('auth')->group(function () {
 Route::get('/login', function () {
     return redirect()->route('auth.login');
 })->name('login');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware('role:admin,petugas')->name('dashboard');

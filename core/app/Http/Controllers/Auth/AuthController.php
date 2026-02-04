@@ -58,7 +58,7 @@ class AuthController extends Controller
             $user->save();
         }
 
-        return redirect('/')->with('success', 'Login berhasil');
+        return redirect()->route('dashboard')->with('success', 'Login berhasil');
     }
 
     /* =======================
@@ -83,7 +83,7 @@ class AuthController extends Controller
             'last_active_at' => Carbon::now(),
         ]);
 
-        return redirect('/login')->with('success', 'Registrasi berhasil, silakan login');
+        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil, silakan login');
     }
 
     /* =======================
@@ -96,6 +96,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login')->with('success', 'Logout berhasil');
+        return redirect()->route('auth.login')->with('success', 'Logout berhasil');
     }
 }
