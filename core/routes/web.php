@@ -34,6 +34,11 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
 
     Route::controller(UserController::class)->group(function () {
         Route::get('users', 'listUsers')->name('user.list');
+        Route::get('users/create', 'create')->name('user.create');
+        Route::post('users', 'store')->name('user.store');
+        Route::get('users/{user}/edit', 'edit')->name('user.edit');
+        Route::put('users/{user}', 'update')->name('user.update');
+        Route::delete('users/{user}', 'destroy')->name('user.destroy');
         Route::get('users/data', 'getAllUsers')->name('user.data');
     });
 

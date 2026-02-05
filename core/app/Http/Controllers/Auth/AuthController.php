@@ -78,7 +78,7 @@ class AuthController extends Controller
             'email'          => $request->email,
             'username'       => $request->username,
             'password'       => Hash::make($request->password),
-            'role'           => 'peminjam', // 👈 ROLE DITETAPKAN LANGSUNG
+            'role'           => 'peminjam',
             'is_active'      => true,
             'last_active_at' => Carbon::now(),
         ]);

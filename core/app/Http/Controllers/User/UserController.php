@@ -7,6 +7,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -117,5 +119,99 @@ class UserController extends Controller
             'success' => true,
             'data' => $users
         ]);
+    }
+
+    /**
+     * Form tambah pengguna.
+     */
+    public function create()
+    {
+        return view('user.create');
+    }
+
+    /**
+     * Simpan pengguna baru.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:users,username'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', 'string', 'max:50'],
+            'password' => ['required', 'string', 'min:8'],
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        User::create($validated);
+
+        return redirect()
+            ->route('user.list')
+            ->with('success', 'Pengguna berhasil ditambahkan.');
+    }
+
+    /**
+     * Form edit pengguna.
+     */
+    public function edit(User $user)
+    {
+        return view('user.edit', compact('user'));
+    }
+
+    /**
+     * Update pengguna.
+     */
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'alpha_dash',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'role' => ['required', 'string', 'max:50'],
+            'password' => ['nullable', 'string', 'min:8'],
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return redirect()
+            ->route('user.list')
+            ->with('success', 'Pengguna berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus pengguna.
+     */
+    public function destroy(User $user)
+    {
+        if (Auth::id() === $user->id) {
+            return redirect()
+                ->route('user.list')
+                ->with('error', 'Tidak dapat menghapus akun sendiri.');
+        }
+
+        $user->delete();
+
+        return redirect()
+            ->route('user.list')
+            ->with('success', 'Pengguna berhasil dihapus.');
     }
 }

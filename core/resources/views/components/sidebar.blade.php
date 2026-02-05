@@ -1,4 +1,7 @@
-@props(['role' => 'admin'])
+@php
+	$currentRoute = request()->route()?->getName();
+	$role = auth()->user()->role ?? null;
+@endphp
 
 @php
 	$currentRoute = request()->route()?->getName();
