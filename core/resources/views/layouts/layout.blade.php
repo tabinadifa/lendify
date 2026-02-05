@@ -10,9 +10,9 @@
 
 	<style>
 		:root {
-			--primary-green: #2D6F4E;
+			--primary-green: #90AB8B;
 			--light-green: #E8F5E9;
-			--dark-gray: #2C3E50;
+			--dark-gray: #5A7863;
 		}
 
 		body {

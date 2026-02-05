@@ -9,10 +9,6 @@
 		<h2 class="fw-bold mb-1">Dashboard Peminjaman Alat</h2>
 		<p class="text-muted mb-0">Kelola peminjaman alat praktikum dengan mudah dan efisien.</p>
 	</div>
-	<div class="d-flex gap-2">
-		<button class="btn btn-success"><i class="bi bi-plus-lg me-1"></i>Tambah Peminjaman</button>
-		<button class="btn btn-outline-secondary"><i class="bi bi-download me-1"></i>Unduh Laporan</button>
-	</div>
 </div>
 
 <!-- Metrics Cards -->
@@ -45,7 +41,7 @@
 		<div class="metric-card bg-white">
 			<div class="d-flex justify-content-between align-items-start">
 				<div>
-					<div class="metric-label text-muted">Peminjaman Aktif</div>
+					<div class="metric-label text-muted">Total Peminjaman</div>
 					<div class="metric-value text-dark">27</div>
 					<small class="text-muted"><i class="bi bi-clock me-1"></i>Sedang berlangsung</small>
 				</div>
@@ -112,113 +108,6 @@
 						<div class="flex-grow-1">
 							<h6 class="mb-0" style="font-size: 0.875rem;">Tabung Reaksi Set</h6>
 							<small class="text-muted">Terlambat 2 hari</small>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Alat Populer -->
-	<div class="col-md-4">
-		<div class="card border-0 shadow-sm h-100">
-			<div class="card-body">
-				<div class="d-flex justify-content-between align-items-center mb-3">
-					<h6 class="fw-bold mb-0">Alat Paling Sering Dipinjam</h6>
-					<a href="#" class="text-decoration-none" style="font-size: 0.875rem;">Lihat Semua</a>
-				</div>
-				<div class="list-group list-group-flush">
-					<div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
-						<div><i class="bi bi-eyedropper text-primary me-2"></i>Mikroskop Digital</div>
-						<span class="badge bg-primary">28x</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
-						<div><i class="bi bi-mortarboard text-success me-2"></i>Tabung Reaksi Set</div>
-						<span class="badge bg-success">24x</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
-						<div><i class="bi bi-thermometer text-info me-2"></i>Termometer Digital</div>
-						<span class="badge bg-info">19x</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
-						<div><i class="bi bi-droplet text-warning me-2"></i>Pipet Tetes</div>
-						<span class="badge bg-warning">15x</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
-						<div><i class="bi bi-calculator text-secondary me-2"></i>pH Meter</div>
-						<span class="badge bg-secondary">12x</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Peminjaman Terbaru -->
-	<div class="col-md-4">
-		<div class="card border-0 shadow-sm h-100">
-			<div class="card-body">
-				<div class="d-flex justify-content-between align-items-center mb-3">
-					<h6 class="fw-bold mb-0">Peminjaman Terbaru</h6>
-					<a href="#" class="text-decoration-none" style="font-size: 0.875rem;">Lihat Semua</a>
-				</div>
-				<div class="list-group list-group-flush">
-					<div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
-						<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">AM</div>
-						<div class="flex-grow-1">
-							<div style="font-size: 0.875rem;">Ahmad Maulana</div>
-							<small class="text-muted">Mikroskop #7 • 2 jam lalu</small>
-						</div>
-						<span class="badge bg-success">Disetujui</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
-						<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">SN</div>
-						<div class="flex-grow-1">
-							<div style="font-size: 0.875rem;">Siti Nurhaliza</div>
-							<small class="text-muted">Tabung Reaksi • 3 jam lalu</small>
-						</div>
-						<span class="badge bg-warning">Menunggu</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
-						<div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">BW</div>
-						<div class="flex-grow-1">
-							<div style="font-size: 0.875rem;">Budi Wijaya</div>
-							<small class="text-muted">pH Meter • 5 jam lalu</small>
-						</div>
-						<span class="badge bg-success">Disetujui</span>
-					</div>
-					<div class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
-						<div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">DP</div>
-						<div class="flex-grow-1">
-							<div style="font-size: 0.875rem;">Dewi Purnama</div>
-							<small class="text-muted">Termometer • Kemarin</small>
-						</div>
-						<span class="badge bg-secondary">Selesai</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Status Ketersediaan Alat -->
-	<div class="col-md-4">
-		<div class="card border-0 shadow-sm h-100">
-			<div class="card-body d-flex flex-column justify-content-center align-items-center">
-				<h6 class="fw-bold mb-4">Ketersediaan Alat</h6>
-				<div class="progress-circle mb-3" style="background: conic-gradient(var(--primary-green) 74%, #E5E7EB 0);">
-					<div class="progress-text">74%</div>
-				</div>
-				<p class="text-muted mb-3">Alat Tersedia</p>
-				<div class="d-flex gap-3 w-100 justify-content-center">
-					<div class="text-center">
-						<div class="d-flex align-items-center gap-1">
-							<div class="rounded-circle" style="width: 10px; height: 10px; background-color: var(--primary-green);"></div>
-							<small>Tersedia (107)</small>
-						</div>
-					</div>
-					<div class="text-center">
-						<div class="d-flex align-items-center gap-1">
-							<div class="rounded-circle" style="width: 10px; height: 10px; background-color: #E5E7EB;"></div>
-							<small>Dipinjam (38)</small>
 						</div>
 					</div>
 				</div>
