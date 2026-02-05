@@ -13,6 +13,7 @@ Route::prefix('auth')->group(function () {
         Route::post('login', 'loginProcess')->name('auth.login.process');
         Route::get('register', 'register')->name('auth.register');
         Route::post('register', 'registerProcess')->name('auth.register.process');
+        Route::post('logout', 'logout')->name('auth.logout');
     });
 });
 
