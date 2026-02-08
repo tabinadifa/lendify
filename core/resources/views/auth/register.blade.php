@@ -4,11 +4,10 @@
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-md-5 col-lg-4">
+    <div class="col-md-7 col-lg-5">
         <div class="card auth-card shadow-lg">
             <div class="card-body">
                 <h4 class="text-center mb-2 auth-title">Buat Akun Baru</h4>
-                <p class="text-center mb-4 auth-description">Gabung dan mulai nikmati kemudahan layanan kami.</p>
 
                 <form method="POST" action="{{ route('auth.register.process') }}">
                     @csrf

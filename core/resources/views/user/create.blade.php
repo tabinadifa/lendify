@@ -5,7 +5,6 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0">Tambah Pengguna</h2>
-    <a href="{{ route('user.list') }}" class="btn btn-outline-secondary">Kembali</a>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4">

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Kategori;
+namespace App\Http\Controllers\Admin\Kategori;
 
 use App\Http\Controllers\Controller;
 use App\Models\KategoriAlat;

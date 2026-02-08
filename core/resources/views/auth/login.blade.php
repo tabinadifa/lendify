@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
+        <div class="col-md-7 col-lg-5">
             <div class="card auth-card shadow-lg">
                 <div class="card-body">
                     <h4 class="text-center mb-2 auth-title">Masuk ke Akun</h4>
@@ -43,7 +43,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-auth-primary w-100">
-                            Login
+                            Masuk
                         </button>
 
                         <div class="text-center mt-3">

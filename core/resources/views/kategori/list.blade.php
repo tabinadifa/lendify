@@ -186,7 +186,6 @@
             const formEdit = document.getElementById('formEditKategori');
             const inputNama = document.getElementById('editNamaKategori');
 
-            // URL template dari Laravel
             const updateUrlTemplate = "{{ route('kategori.update', ':id') }}";
 
             modalEdit.addEventListener('show.bs.modal', function(event) {
@@ -197,7 +196,6 @@
 
                 inputNama.value = nama;
 
-                // Ganti :id dengan ID asli
                 formEdit.action = updateUrlTemplate.replace(':id', id);
             });
         });

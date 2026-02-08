@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -66,8 +67,19 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request)
-    {
-        //
-    }
+    // public function updateProfile(Request $request)
+    // {
+    //     $user = Auth::user();
+
+    //     if (!$user) {
+    //         return redirect()->route('auth.login')->with('error', 'Silakan login terlebih dahulu.');
+    //     }
+
+    //     $validated = $request->validate([
+    //         'name' => ['required', 'string', 'max:255' . $user->id],
+    //         'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
+    //         'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+    //     ]);
+
+    // }
 }

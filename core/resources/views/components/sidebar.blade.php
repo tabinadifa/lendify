@@ -22,10 +22,10 @@
 		</a>
 		
 		@if($role === 'admin')
-			<a class="nav-link" href="{{ route('user.list') }}" data-nav-link><i class="bi bi-people me-2"></i>Kelola Pengguna</a>
-			<a class="nav-link" href="{{ route('kategori.list') }}" data-nav-link><i class="bi bi-tags me-2"></i>Kategori</a>
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-box-seam me-2"></i>Alat</a>
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-clipboard-check me-2"></i>Peminjaman</a>
+			<a class="nav-link {{ $currentRoute === 'user.list' ? 'active' : '' }}" href="{{ route('user.list') }}" data-nav-link><i class="bi bi-people me-2"></i>Kelola Pengguna</a>
+			<a class="nav-link {{ $currentRoute === 'kategori.list' ? 'active' : '' }}" href="{{ route('kategori.list') }}" data-nav-link><i class="bi bi-tags me-2"></i>Kategori</a>
+			<a class="nav-link {{ $currentRoute === 'alat.list' ? 'active' : '' }}" href="{{ route('alat.list') }}" data-nav-link><i class="bi bi-box-seam me-2"></i>Alat</a>
+			<a class="nav-link {{ $currentRoute === 'peminjaman.list' ? 'active' : '' }}" href="{{ route('peminjaman.list') }}" data-nav-link><i class="bi bi-clipboard-check me-2"></i>Peminjaman</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-arrow-return-left me-2"></i>Pengembalian</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-clock-history me-2"></i>Log Aktifitas</a>
 		@elseif($role === 'petugas')

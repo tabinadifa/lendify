@@ -13,7 +13,7 @@
 
 <!-- Metrics Cards -->
 <div class="row g-3 mb-4">
-	<div class="col-md-3">
+	<div class="col-12 col-sm-6 col-md-4">
 		<div class="metric-card green">
 			<div class="d-flex justify-content-between align-items-start">
 				<div>
@@ -25,7 +25,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-md-3">
+	<div class="col-12 col-sm-6 col-md-4">
 		<div class="metric-card bg-white">
 			<div class="d-flex justify-content-between align-items-start">
 				<div>
@@ -37,7 +37,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-md-3">
+	<div class="col-12 col-sm-6 col-md-4">
 		<div class="metric-card bg-white">
 			<div class="d-flex justify-content-between align-items-start">
 				<div>
@@ -46,18 +46,6 @@
 					<small class="text-muted"><i class="bi bi-clock me-1"></i>Sedang berlangsung</small>
 				</div>
 				<i class="bi bi-hourglass-split"></i>
-			</div>
-		</div>
-	</div>
-	<div class="col-md-3">
-		<div class="metric-card bg-white">
-			<div class="d-flex justify-content-between align-items-start">
-				<div>
-					<div class="metric-label text-muted">Pengembalian Pending</div>
-					<div class="metric-value text-dark">8</div>
-					<small class="text-muted">Harus dikembalikan segera</small>
-				</div>
-				<i class="bi bi-exclamation-triangle"></i>
 			</div>
 		</div>
 	</div>
@@ -110,39 +98,6 @@
 							<small class="text-muted">Terlambat 2 hari</small>
 						</div>
 					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Aktivitas Hari Ini -->
-	<div class="col-md-4">
-		<div class="card border-0 shadow-sm h-100">
-			<div class="card-body">
-				<h6 class="fw-bold mb-3">Aktivitas Hari Ini</h6>
-				<div class="d-flex justify-content-around text-center mb-3">
-					<div>
-						<div class="fs-2 fw-bold text-success">15</div>
-						<small class="text-muted">Peminjaman Baru</small>
-					</div>
-					<div class="border-start"></div>
-					<div>
-						<div class="fs-2 fw-bold text-primary">12</div>
-						<small class="text-muted">Pengembalian</small>
-					</div>
-				</div>
-				<hr>
-				<div class="d-flex justify-content-between align-items-center mb-2">
-					<span class="text-muted">Pending Approval</span>
-					<span class="badge bg-warning">5</span>
-				</div>
-				<div class="d-flex justify-content-between align-items-center mb-2">
-					<span class="text-muted">Terlambat Kembali</span>
-					<span class="badge bg-danger">3</span>
-				</div>
-				<div class="d-flex justify-content-between align-items-center">
-					<span class="text-muted">Maintenance</span>
-					<span class="badge bg-secondary">2</span>
 				</div>
 			</div>
 		</div>
