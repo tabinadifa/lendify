@@ -23,7 +23,7 @@
 		
 		@if($role === 'admin')
 			<a class="nav-link" href="{{ route('user.list') }}" data-nav-link><i class="bi bi-people me-2"></i>Kelola Pengguna</a>
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-tags me-2"></i>Kategori</a>
+			<a class="nav-link" href="{{ route('kategori.list') }}" data-nav-link><i class="bi bi-tags me-2"></i>Kategori</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-box-seam me-2"></i>Alat</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-clipboard-check me-2"></i>Peminjaman</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-arrow-return-left me-2"></i>Pengembalian</a>

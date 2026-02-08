@@ -121,17 +121,11 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Form tambah pengguna.
-     */
     public function create()
     {
         return view('user.create');
     }
 
-    /**
-     * Simpan pengguna baru.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -140,6 +134,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', 'string', 'max:50'],
             'password' => ['required', 'string', 'min:8'],
+            'last_active_at' => ['nullable', 'date'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -151,17 +146,11 @@ class UserController extends Controller
             ->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
-    /**
-     * Form edit pengguna.
-     */
     public function edit(User $user)
     {
         return view('user.edit', compact('user'));
     }
 
-    /**
-     * Update pengguna.
-     */
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
@@ -197,9 +186,6 @@ class UserController extends Controller
             ->with('success', 'Pengguna berhasil diperbarui.');
     }
 
-    /**
-     * Hapus pengguna.
-     */
     public function destroy(User $user)
     {
         if (Auth::id() === $user->id) {

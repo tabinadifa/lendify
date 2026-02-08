@@ -26,6 +26,19 @@ class User extends Authenticatable
         'last_active_at',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            // Saat user pertama kali dibuat
+            $user->last_active_at = now();
+        });
+
+        static::updating(function ($user) {
+            // Saat data user diubah
+            $user->last_active_at = now();
+        });
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

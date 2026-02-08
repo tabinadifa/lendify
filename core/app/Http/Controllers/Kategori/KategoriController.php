@@ -6,14 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\KategoriAlat;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class KategoriController extends Controller
 {
-    /**
-     * Show paginated category list.
-     */
-    public function index(Request $request)
+    public function listCategories(Request $request)
     {
+        if (!Auth::check()) {
+            return redirect()->route('auth.login')
+                ->with('error', 'Silakan login terlebih dahulu.');
+        }
+        
         $query = KategoriAlat::select('id', 'nama_kategori', 'created_at', 'updated_at');
 
         if ($request->filled('search')) {
@@ -35,76 +41,80 @@ class KategoriController extends Controller
         return view('kategori.list', compact('kategoriAlats'));
     }
 
-    /**
-     * Backward compatibility with existing route signature.
-     */
-    public function category(Request $request)
-    {
-        return $this->index($request);
-    }
-
-    /**
-     * Show create form.
-     */
     public function create()
     {
         return view('kategori.create');
     }
 
-    /**
-     * Persist new category.
-     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_kategori' => ['required', 'string', 'max:255', 'unique:kategori_alat,nama_kategori'],
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama_kategori' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[A-Za-z\s]+$/', // hanya huruf & spasi
+                    'unique:kategori_alat,nama_kategori',
+                ],
+            ], [
+                'nama_kategori.regex' => 'Nama kategori hanya boleh berisi huruf dan spasi.',
+            ]);
 
-        KategoriAlat::create($validated);
+            $validated['nama_kategori'] = ucwords(strtolower($validated['nama_kategori']));
 
-        return redirect()
-            ->route('kategori.index')
-            ->with('success', 'Kategori berhasil ditambahkan.');
+            KategoriAlat::create($validated);
+
+            return redirect()
+                ->route('kategori.list')
+                ->with('success', 'Kategori berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan kategori.');
+        }
     }
 
-    /**
-     * Show edit form.
-     */
     public function edit(KategoriAlat $kategori)
     {
         return view('kategori.edit', compact('kategori'));
     }
 
-    /**
-     * Update existing category.
-     */
     public function update(Request $request, KategoriAlat $kategori)
     {
-        $validated = $request->validate([
-            'nama_kategori' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('kategori_alat', 'nama_kategori')->ignore($kategori->id),
-            ],
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama_kategori' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[A-Za-z\s]+$/',
+                    Rule::unique('kategori_alat', 'nama_kategori')->ignore($kategori->id),
+                ],
+            ], [
+                'nama_kategori.regex' => 'Nama kategori hanya boleh berisi huruf dan spasi.',
+            ]);
 
-        $kategori->update($validated);
+            $validated['nama_kategori'] = ucwords(strtolower($validated['nama_kategori']));
 
-        return redirect()
-            ->route('kategori.index')
-            ->with('success', 'Kategori berhasil diperbarui.');
+            $kategori->update($validated);
+
+            return redirect()
+                ->route('kategori.list')
+                ->with('success', 'Kategori berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui kategori.');
+        }
     }
 
-    /**
-     * Remove category.
-     */
     public function destroy(KategoriAlat $kategori)
     {
         $kategori->delete();
 
         return redirect()
-            ->route('kategori.index')
+            ->route('kategori.list')
             ->with('success', 'Kategori berhasil dihapus.');
     }
 }
