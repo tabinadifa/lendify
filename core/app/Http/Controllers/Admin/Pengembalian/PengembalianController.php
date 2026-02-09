@@ -64,7 +64,7 @@ class PengembalianController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('pengembalian.list', [
+        return view('admin.pengembalian.list', [
             'pengembalians' => $pengembalians,
         ]);
     }
@@ -93,7 +93,7 @@ class PengembalianController extends Controller
             ->orderByDesc('tanggal_pinjam')
             ->get();
 
-        return view('pengembalian.create', [
+        return view('admin.pengembalian.create', [
             'peminjamans' => $peminjamans,
             'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')
                 ->orderByDesc('created_at')
@@ -183,7 +183,7 @@ class PengembalianController extends Controller
             'fileBuktiPengembalian'
         );
 
-        return view('pengembalian.show', [
+        return view('admin.pengembalian.show', [
             'pengembalian' => $pengembalian,
         ]);
     }
@@ -198,7 +198,7 @@ class PengembalianController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        return view('pengembalian.edit', [
+        return view('admin.pengembalian.edit', [
             'pengembalian' => $pengembalian,
             'peminjamans' => Peminjaman::with('alat')->select('id', 'alat_id')->get(),
             'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')

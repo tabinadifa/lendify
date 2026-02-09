@@ -11,7 +11,7 @@
         <div class="card-body">
 
             {{-- Alert --}}
-            @foreach (['success', 'error', 'info'] as $msg)
+            @foreach (['error', 'info'] as $msg)
                 @if (session($msg))
                     <div class="alert alert-{{ $msg === 'error' ? 'danger' : $msg }} alert-dismissible fade show">
                         {{ session($msg) }}

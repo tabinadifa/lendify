@@ -25,7 +25,7 @@ class FileManagerController extends Controller
             ->latest()
             ->get();
 
-        return view('filemanager.list', [
+        return view('admin.filemanager.list', [
             'files' => $files,
             'defaultFolder' => 'bukti-pengembalian',
         ]);

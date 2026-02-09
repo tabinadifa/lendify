@@ -38,12 +38,12 @@ class KategoriController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('kategori.list', compact('kategoriAlats'));
+        return view('admin.kategori.list', compact('kategoriAlats'));
     }
 
     public function create()
     {
-        return view('kategori.create');
+        return view('admin.kategori.create');
     }
 
     public function store(Request $request)
@@ -77,7 +77,7 @@ class KategoriController extends Controller
 
     public function edit(KategoriAlat $kategori)
     {
-        return view('kategori.edit', compact('kategori'));
+        return view('admin.kategori.edit', compact('kategori'));
     }
 
     public function update(Request $request, KategoriAlat $kategori)

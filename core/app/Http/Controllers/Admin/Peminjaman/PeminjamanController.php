@@ -65,7 +65,7 @@ class PeminjamanController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('peminjaman.list', [
+        return view('admin.peminjaman.list', [
             'peminjaman' => $peminjaman,
             'allowedStatuses' => $this->allowedStatuses,
         ]);
@@ -78,7 +78,7 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        return view('peminjaman.create', [
+        return view('admin.peminjaman.create', [
             'peminjams' => User::select('id', 'name')->get(),
             'alats' => Alat::select('id', 'nama_alat')->get(),
             'allowedStatuses' => $this->allowedStatuses,
@@ -135,7 +135,7 @@ class PeminjamanController extends Controller
 
         $peminjaman->loadMissing('alat:id,nama_alat', 'peminjam:id,name,username,email');
 
-        return view('peminjaman.show', [
+        return view('admin.peminjaman.show', [
             'peminjaman' => $peminjaman->load('alat', 'peminjam'),
             'allowedStatuses' => $this->allowedStatuses,
         ]);
@@ -150,7 +150,7 @@ class PeminjamanController extends Controller
 
         $peminjaman->loadMissing('alat:id,nama_alat', 'peminjam:id,name');
 
-        return view('peminjaman.edit', [
+        return view('admin.peminjaman.edit', [
             'peminjaman' => $peminjaman->load('peminjam'),
             'alats' => Alat::select('id', 'nama_alat')->orderBy('nama_alat')->get(),
             'allowedStatuses' => $this->allowedStatuses,

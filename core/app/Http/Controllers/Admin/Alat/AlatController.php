@@ -39,7 +39,7 @@ class AlatController extends Controller
 
         $kategoriAlats = KategoriAlat::orderBy('nama_kategori')->get();
 
-        return view('alat.list', compact('alats', 'kategoriAlats'));
+        return view('admin.alat.list', compact('alats', 'kategoriAlats'));
     }
 
     public function create()
@@ -50,7 +50,7 @@ class AlatController extends Controller
         }
 
         $kategoriAlats = KategoriAlat::orderBy('nama_kategori')->get();
-        return view('alat.create', compact('kategoriAlats'));
+        return view('admin.alat.create', compact('kategoriAlats'));
     }
 
     public function store(Request $request)
@@ -88,7 +88,7 @@ class AlatController extends Controller
     {
         $kategoriAlats = KategoriAlat::orderBy('nama_kategori')->get();
 
-        return view('alat.edit', compact('alat', 'kategoriAlats'));
+        return view('admin.alat.edit', compact('alat', 'kategoriAlats'));
     }
 
     public function update(Request $request, Alat $alat)

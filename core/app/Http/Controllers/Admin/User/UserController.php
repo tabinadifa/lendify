@@ -64,7 +64,7 @@ class UserController extends Controller
             return $user;
         });
 
-        return view('user.list', compact('users'));
+        return view('admin.user.list', compact('users'));
     }
 
     /**
@@ -123,7 +123,7 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('user.create');
+        return view('admin.user.create');
     }
 
     public function store(Request $request)
@@ -148,7 +148,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        return view('user.edit', compact('user'));
+        return view('admin.user.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
