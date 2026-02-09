@@ -21,15 +21,20 @@ class DashboardController extends Controller
         $today = Carbon::today();
 
         $totalAlat = Alat::count();
+        $totalStok = (int) Alat::sum('jumlah_stok');
         $alatAddedThisMonth = Alat::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
 
         $totalPeminjaman = Peminjaman::count();
-        $borrowedCount = Peminjaman::where('status', 'borrowed')->count();
-        $activeLoans = Peminjaman::whereIn('status', ['pending', 'approved', 'borrowed'])->count();
+        $borrowedCount = (int) Peminjaman::where('status', 'approve')->sum('total_alat');
+        $activeLoans = Peminjaman::whereIn('status', ['pending', 'approve'])->count();
         $totalPengembalian = Pengembalian::count();
 
-        $borrowedPercentage = $totalAlat > 0
-            ? round(($borrowedCount / $totalAlat) * 100)
+        $returnCompletionPercentage = $totalPeminjaman > 0
+            ? (int) min(100, max(0, round(($totalPengembalian / $totalPeminjaman) * 100)))
+            : 0;
+
+        $borrowedPercentage = $totalStok > 0
+            ? round(($borrowedCount / $totalStok) * 100)
             : 0;
 
         $weeklyStats = $this->getWeeklyLoanStats();
@@ -46,6 +51,7 @@ class DashboardController extends Controller
             'activeLoans' => $activeLoans,
             'totalPeminjaman' => $totalPeminjaman,
             'totalPengembalian' => $totalPengembalian,
+            'returnCompletionPercentage' => $returnCompletionPercentage,
             'weeklyStats' => $weeklyStats,
             'reminders' => $reminders,
         ]);
@@ -80,7 +86,7 @@ class DashboardController extends Controller
         return Peminjaman::with(['alat:id,nama_alat', 'peminjam:id,name'])
             ->whereNotNull('tanggal_kembali')
             ->whereBetween('tanggal_kembali', [$today->toDateString(), $rangeEnd->toDateString()])
-            ->where('status', '!=', 'returned')
+            ->where('status', 'approve')
             ->orderBy('tanggal_kembali')
             ->limit(3)
             ->get();
@@ -91,7 +97,7 @@ class DashboardController extends Controller
         return Peminjaman::with(['alat:id,nama_alat', 'peminjam:id,name'])
             ->whereNotNull('tanggal_kembali')
             ->whereDate('tanggal_kembali', '<', $today->toDateString())
-            ->where('status', '!=', 'returned')
+            ->where('status', 'approve')
             ->orderByDesc('tanggal_kembali')
             ->limit(3)
             ->get();

@@ -5,6 +5,7 @@
 @section('content')
 @php
 	$maxWeeklyValue = max(1, $weeklyStats->max('count'));
+	$returnCompletionPercentage = $returnCompletionPercentage ?? 0;
 @endphp
 
 <!-- Header -->
@@ -142,8 +143,8 @@
 		<div class="card border-0 shadow-sm h-100">
 			<div class="card-body">
 				<h6 class="fw-bold mb-3">Ringkasan Pengembalian</h6>
-				<div class="progress-circle mx-auto mb-3">
-					<div class="progress-text">{{ $totalPeminjaman > 0 ? round(($totalPengembalian / max(1, $totalPeminjaman)) * 100) : 0 }}%</div>
+				<div class="progress-circle mx-auto mb-3" style="background: conic-gradient(var(--primary-green) {{ $returnCompletionPercentage }}%, #E5E7EB 0);">
+					<div class="progress-text">{{ $returnCompletionPercentage }}%</div>
 				</div>
 				<p class="text-center text-muted small mb-0">{{ number_format($totalPengembalian) }} pengembalian dari {{ number_format($totalPeminjaman) }} peminjaman</p>
 			</div>

@@ -52,6 +52,7 @@
                             <th>No</th>
                             <th>Peminjam</th>
                             <th>Alat</th>
+                            <th>Total</th>
                             <th>Tanggal Pinjam</th>
                             <th>Tanggal Kembali</th>
                             <th>Status</th>
@@ -67,6 +68,7 @@
                                     <small class="text-muted">{{ $item->peminjam->email }}</small>
                                 </td>
                                 <td>{{ $item->alat->nama_alat }}</td>
+                                <td>{{ $item->total_alat }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_pinjam)->format('d M Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_kembali)->format('d M Y') }}</td>
                                 <td>
@@ -108,7 +110,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="8" class="text-center text-muted py-4">
                                     Data peminjaman tidak ditemukan
                                 </td>
                             </tr>

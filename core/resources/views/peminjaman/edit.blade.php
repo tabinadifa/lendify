@@ -77,6 +77,20 @@
                 >
             </div>
 
+            {{-- Total Alat --}}
+            <div class="col-md-3">
+                <label for="total_alat" class="form-label">Total Alat</label>
+                <input
+                    type="number"
+                    id="total_alat"
+                    name="total_alat"
+                    class="form-control"
+                    value="{{ old('total_alat', $peminjaman->total_alat) }}"
+                    min="1"
+                    required
+                >
+            </div>
+
             {{-- Status --}}
             <div class="col-md-6">
                 <label for="status" class="form-label">Status</label>

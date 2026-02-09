@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Alat;
 use App\Models\Peminjaman;
 use App\Models\User;
+use App\Services\AlatStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PeminjamanController extends Controller
@@ -28,6 +30,7 @@ class PeminjamanController extends Controller
             'id',
             'alat_id',
             'peminjam_id',
+            'total_alat',
             'tanggal_pinjam',
             'tanggal_kembali',
             'status',
@@ -92,20 +95,31 @@ class PeminjamanController extends Controller
         $validated = $request->validate([
             'alat_id' => ['required', 'exists:alat,id'],
             'peminjam_id' => ['required', 'exists:users,id'],
+            'total_alat' => ['required', 'integer', 'min:1'],
             'tanggal_pinjam' => ['required', 'date'],
             'tanggal_kembali' => ['required', 'date', 'after_or_equal:tanggal_pinjam'],
             'status' => ['nullable', Rule::in($this->allowedStatuses)],
             'alasan_ditolak' => ['nullable', 'string', 'max:255'],
         ]);
 
-        Peminjaman::create([
+        $status = $validated['status'] ?? 'pending';
+        $payload = [
             'alat_id' => $validated['alat_id'],
             'peminjam_id' => $validated['peminjam_id'],
+            'total_alat' => $validated['total_alat'],
             'tanggal_pinjam' => $validated['tanggal_pinjam'],
             'tanggal_kembali' => $validated['tanggal_kembali'],
-            'status' => $validated['status'] ?? 'pending',
+            'status' => $status,
             'alasan_ditolak' => $validated['alasan_ditolak'] ?? null,
-        ]);
+        ];
+
+        DB::transaction(function () use ($payload, $status) {
+            if ($status === 'approve') {
+                AlatStockService::deduct($payload['alat_id'], $payload['total_alat']);
+            }
+
+            Peminjaman::create($payload);
+        });
 
         return redirect()
             ->route('peminjaman.list')
@@ -153,6 +167,7 @@ class PeminjamanController extends Controller
         $validated = $request->validate([
             'alat_id' => ['required', 'exists:alat,id'],
             'peminjam_id' => ['required', 'exists:users,id'],
+            'total_alat' => ['required', 'integer', 'min:1'],
             'tanggal_pinjam' => ['required', 'date'],
             'tanggal_kembali' => ['required', 'date', 'after_or_equal:tanggal_pinjam'],
             'status' => ['required', Rule::in($this->allowedStatuses)],
@@ -164,14 +179,35 @@ class PeminjamanController extends Controller
             $validated['alasan_ditolak'] = null;
         }
 
-        $peminjaman->update([
-            'alat_id' => $validated['alat_id'],
-            'peminjam_id' => $validated['peminjam_id'],
-            'tanggal_pinjam' => $validated['tanggal_pinjam'],
-            'tanggal_kembali' => $validated['tanggal_kembali'],
-            'status' => $validated['status'],
-            'alasan_ditolak' => $validated['alasan_ditolak'],
-        ]);
+        $previousStatus = $peminjaman->status;
+        $previousAlatId = $peminjaman->alat_id;
+        $previousTotal = $peminjaman->total_alat;
+
+        DB::transaction(function () use (
+            $peminjaman,
+            $validated,
+            $previousStatus,
+            $previousAlatId,
+            $previousTotal
+        ) {
+            if ($previousStatus === 'approve') {
+                AlatStockService::restore($previousAlatId, $previousTotal);
+            }
+
+            $peminjaman->update([
+                'alat_id' => $validated['alat_id'],
+                'peminjam_id' => $validated['peminjam_id'],
+                'total_alat' => $validated['total_alat'],
+                'tanggal_pinjam' => $validated['tanggal_pinjam'],
+                'tanggal_kembali' => $validated['tanggal_kembali'],
+                'status' => $validated['status'],
+                'alasan_ditolak' => $validated['alasan_ditolak'],
+            ]);
+
+            if ($validated['status'] === 'approve') {
+                AlatStockService::deduct($validated['alat_id'], $validated['total_alat']);
+            }
+        });
 
         return redirect()
             ->route('peminjaman.list')
@@ -193,9 +229,29 @@ class PeminjamanController extends Controller
             return back()->with('info', 'Status peminjaman sudah sesuai.');
         }
 
-        $peminjaman->update([
-            'status' => $validated['status'],
-        ]);
+        $previousStatus = $peminjaman->status;
+        $previousAlatId = $peminjaman->alat_id;
+        $previousTotal = $peminjaman->total_alat;
+
+        DB::transaction(function () use (
+            $peminjaman,
+            $validated,
+            $previousStatus,
+            $previousAlatId,
+            $previousTotal
+        ) {
+            if ($previousStatus === 'approve' && $validated['status'] !== 'approve') {
+                AlatStockService::restore($previousAlatId, $previousTotal);
+            }
+
+            $peminjaman->update([
+                'status' => $validated['status'],
+            ]);
+
+            if ($validated['status'] === 'approve' && $previousStatus !== 'approve') {
+                AlatStockService::deduct($peminjaman->alat_id, $peminjaman->total_alat);
+            }
+        });
 
         return back()->with('success', 'Status peminjaman berhasil diperbarui.');
     }
@@ -207,7 +263,14 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $peminjaman->delete();
+
+        DB::transaction(function () use ($peminjaman) {
+            if ($peminjaman->status === 'approve') {
+                AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat);
+            }
+
+            $peminjaman->delete();
+        });
 
         return redirect()
             ->route('peminjaman.list')

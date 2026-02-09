@@ -38,6 +38,10 @@
                             <th class="text-muted">Tanggal Kembali</th>
                             <td>{{ \Carbon\Carbon::parse($peminjaman->tanggal_kembali)->format('d M Y') }}</td>
                         </tr>
+                        <tr>
+                            <th class="text-muted">Total Alat</th>
+                            <td>{{ $peminjaman->total_alat }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>

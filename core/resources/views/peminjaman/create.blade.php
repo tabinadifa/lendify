@@ -101,8 +101,22 @@
                 </select>
             </div>
 
+            {{-- Total Alat --}}
+            <div class="col-md-3">
+                <label for="total_alat" class="form-label">Total Alat</label>
+                <input
+                    type="number"
+                    id="total_alat"
+                    name="total_alat"
+                    class="form-control"
+                    value="{{ old('total_alat', 1) }}"
+                    min="1"
+                    required
+                >
+            </div>
+
             {{-- Alasan Ditolak --}}
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <label for="alasan_ditolak" class="form-label">Alasan Ditolak</label>
                 <textarea
                     name="alasan_ditolak"

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Pengembalian;
 use App\Models\Peminjaman;
 use App\Models\FileManager;
+use App\Services\AlatStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PengembalianController extends Controller
@@ -87,7 +89,8 @@ class PengembalianController extends Controller
             'tanggal_pinjam',
             'tanggal_kembali',
             'status'
-        )->orderByDesc('tanggal_pinjam')
+        )->where('status', 'approve')
+            ->orderByDesc('tanggal_pinjam')
             ->get();
 
         return view('pengembalian.create', [
@@ -117,16 +120,47 @@ class PengembalianController extends Controller
             'catatan' => ['nullable', 'string'],
         ]);
 
-        $dendaValue = $this->resolveDendaValue($validated);
+        DB::transaction(function () use ($validated) {
+            $peminjaman = Peminjaman::select('id', 'alat_id', 'total_alat', 'status', 'tanggal_kembali')
+                ->whereKey($validated['peminjaman_id'])
+                ->lockForUpdate()
+                ->first();
 
-        Pengembalian::create([
-            'peminjaman_id' => $validated['peminjaman_id'],
-            'tanggal_pengembalian' => $validated['tanggal_pengembalian'],
-            'kondisi_alat' => $validated['kondisi_alat'],
-            'denda' => $dendaValue,
-            'file_bukti_pengembalian_id' => $validated['file_bukti_pengembalian_id'] ?? null,
-            'catatan' => $validated['catatan'] ?? null,
-        ]);
+            if (!$peminjaman) {
+                throw ValidationException::withMessages([
+                    'peminjaman_id' => 'Data peminjaman tidak ditemukan.',
+                ]);
+            }
+
+            if ($peminjaman->status === 'dikembalikan') {
+                throw ValidationException::withMessages([
+                    'peminjaman_id' => 'Peminjaman ini sudah dikembalikan.',
+                ]);
+            }
+
+            if ($peminjaman->status !== 'approve') {
+                throw ValidationException::withMessages([
+                    'peminjaman_id' => 'Hanya peminjaman berstatus approve yang dapat dikembalikan.',
+                ]);
+            }
+
+            $dendaValue = $this->resolveDendaValue($validated, $peminjaman);
+
+            Pengembalian::create([
+                'peminjaman_id' => $validated['peminjaman_id'],
+                'tanggal_pengembalian' => $validated['tanggal_pengembalian'],
+                'kondisi_alat' => $validated['kondisi_alat'],
+                'denda' => $dendaValue,
+                'file_bukti_pengembalian_id' => $validated['file_bukti_pengembalian_id'] ?? null,
+                'catatan' => $validated['catatan'] ?? null,
+            ]);
+
+            AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat);
+
+            $peminjaman->update([
+                'status' => 'dikembalikan',
+            ]);
+        });
 
         return redirect()
             ->route('pengembalian.list')
@@ -192,7 +226,16 @@ class PengembalianController extends Controller
             'catatan' => ['nullable', 'string'],
         ]);
 
-        $dendaValue = $this->resolveDendaValue($validated);
+        $peminjaman = Peminjaman::select('id', 'tanggal_kembali')
+            ->find($validated['peminjaman_id']);
+
+        if (!$peminjaman) {
+            throw ValidationException::withMessages([
+                'peminjaman_id' => 'Data peminjaman tidak ditemukan.',
+            ]);
+        }
+
+        $dendaValue = $this->resolveDendaValue($validated, $peminjaman);
 
         $pengembalian->update([
             'peminjaman_id' => $validated['peminjaman_id'],
@@ -225,17 +268,8 @@ class PengembalianController extends Controller
             ->with('success', 'Data pengembalian berhasil dihapus.');
     }
 
-    private function resolveDendaValue(array $validated): float
+    private function resolveDendaValue(array $validated, Peminjaman $peminjaman): float
     {
-        $peminjaman = Peminjaman::select('id', 'tanggal_kembali')
-            ->find($validated['peminjaman_id']);
-
-        if (!$peminjaman) {
-            throw ValidationException::withMessages([
-                'peminjaman_id' => 'Data peminjaman tidak ditemukan.',
-            ]);
-        }
-
         $isLate = $peminjaman->tanggal_kembali
             && Carbon::parse($validated['tanggal_pengembalian'])
                 ->gt(Carbon::parse($peminjaman->tanggal_kembali));
