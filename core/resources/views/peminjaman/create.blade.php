@@ -3,6 +3,10 @@
 @section('title', 'Tambah Peminjaman - Lendify')
 
 @section('content')
+@php
+    $today = now()->format('Y-m-d');
+@endphp
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0">Tambah Peminjaman</h2>
 </div>
@@ -62,6 +66,7 @@
                     name="tanggal_pinjam"
                     class="form-control"
                     value="{{ old('tanggal_pinjam') }}"
+                    min="{{ $today }}"
                     required
                 >
             </div>
@@ -75,6 +80,7 @@
                     name="tanggal_kembali"
                     class="form-control"
                     value="{{ old('tanggal_kembali') }}"
+                    min="{{ $today }}"
                     required
                 >
             </div>
@@ -121,3 +127,37 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const today = '{{ $today }}';
+    const pinjamInput = document.getElementById('tanggal_pinjam');
+    const kembaliInput = document.getElementById('tanggal_kembali');
+
+    if (pinjamInput) {
+        pinjamInput.min = today;
+        if (pinjamInput.value && pinjamInput.value < today) {
+            pinjamInput.value = today;
+        }
+        pinjamInput.addEventListener('change', () => {
+            const minDate = pinjamInput.value || today;
+            if (kembaliInput) {
+                kembaliInput.min = minDate;
+                if (kembaliInput.value && kembaliInput.value < minDate) {
+                    kembaliInput.value = minDate;
+                }
+            }
+        });
+    }
+
+    if (kembaliInput) {
+        const minDate = pinjamInput?.value || today;
+        kembaliInput.min = minDate;
+        if (kembaliInput.value && kembaliInput.value < minDate) {
+            kembaliInput.value = minDate;
+        }
+    }
+});
+</script>
+@endpush

@@ -1,10 +1,9 @@
 @php
 	$currentRoute = request()->route()?->getName();
 	$role = auth()->user()->role ?? null;
-@endphp
-
-@php
-	$currentRoute = request()->route()?->getName();
+	$isPeminjamanMenu = str_starts_with($currentRoute ?? '', 'peminjaman.');
+	$isPengembalianMenu = str_starts_with($currentRoute ?? '', 'pengembalian.');
+	$isFileManagerMenu = str_starts_with($currentRoute ?? '', 'filemanager.');
 @endphp
 
 <div class="col-md-2 sidebar p-3">
@@ -25,8 +24,8 @@
 			<a class="nav-link {{ $currentRoute === 'user.list' ? 'active' : '' }}" href="{{ route('user.list') }}" data-nav-link><i class="bi bi-people me-2"></i>Kelola Pengguna</a>
 			<a class="nav-link {{ $currentRoute === 'kategori.list' ? 'active' : '' }}" href="{{ route('kategori.list') }}" data-nav-link><i class="bi bi-tags me-2"></i>Kategori</a>
 			<a class="nav-link {{ $currentRoute === 'alat.list' ? 'active' : '' }}" href="{{ route('alat.list') }}" data-nav-link><i class="bi bi-box-seam me-2"></i>Alat</a>
-			<a class="nav-link {{ $currentRoute === 'peminjaman.list' ? 'active' : '' }}" href="{{ route('peminjaman.list') }}" data-nav-link><i class="bi bi-clipboard-check me-2"></i>Peminjaman</a>
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-arrow-return-left me-2"></i>Pengembalian</a>
+			<a class="nav-link {{ $isPeminjamanMenu ? 'active' : '' }}" href="{{ route('peminjaman.list') }}" data-nav-link><i class="bi bi-clipboard-check me-2"></i>Peminjaman</a>
+			<a class="nav-link {{ $isPengembalianMenu ? 'active' : '' }}" href="{{ route('pengembalian.list') }}" data-nav-link><i class="bi bi-arrow-return-left me-2"></i>Pengembalian</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-clock-history me-2"></i>Log Aktifitas</a>
 		@elseif($role === 'petugas')
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-check-circle me-2"></i>Menyetujui Peminjaman</a>

@@ -83,7 +83,7 @@ class AuthController extends Controller
             'last_active_at' => Carbon::now(),
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil, silakan login');
+        return redirect()->route('auth.login')->with('success', 'Registrasi berhasil, silakan login');
     }
 
     /* =======================
