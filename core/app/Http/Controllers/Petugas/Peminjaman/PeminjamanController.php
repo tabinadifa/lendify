@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Petugas\Peminjaman;
 
 use App\Http\Controllers\Controller;
 use App\Models\Peminjaman;
+use App\Services\AlatStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PeminjamanController extends Controller
 {
@@ -66,23 +69,45 @@ class PeminjamanController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, Peminjaman $peminjaman)
     {
         if (!Auth::check()) {
             return redirect()->route('auth.login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $peminjaman = Peminjaman::findOrFail($id);
-
         $validated = $request->validate([
-            'status' => ['required', 'in:' . implode(',', $this->allowedStatuses)],
+            'status' => ['required', Rule::in($this->allowedStatuses)],
         ]);
 
-        $peminjaman->status = $validated['status'];
-        $peminjaman->save();
+        if ($peminjaman->status === $validated['status']) {
+            return back()->with('info', 'Status peminjaman sudah sesuai.');
+        }
 
-        return redirect()->route('petugas.peminjaman.list')
-            ->with('success', 'Status peminjaman berhasil diperbarui.');
+        $previousStatus = $peminjaman->status;
+        $previousAlatId = $peminjaman->alat_id;
+        $previousTotal = $peminjaman->total_alat;
+
+        DB::transaction(function () use (
+            $peminjaman,
+            $validated,
+            $previousStatus,
+            $previousAlatId,
+            $previousTotal
+        ) {
+            if ($previousStatus === 'approve' && $validated['status'] !== 'approve') {
+                AlatStockService::restore($previousAlatId, $previousTotal);
+            }
+
+            $peminjaman->update([
+                'status' => $validated['status'],
+            ]);
+
+            if ($validated['status'] === 'approve' && $previousStatus !== 'approve') {
+                AlatStockService::deduct($peminjaman->alat_id, $peminjaman->total_alat);
+            }
+        });
+
+        return back()->with('success', 'Status peminjaman berhasil diperbarui.');
     }
 }

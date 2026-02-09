@@ -79,8 +79,11 @@ class PeminjamanController extends Controller
         }
 
         return view('admin.peminjaman.create', [
-            'peminjams' => User::select('id', 'name')->get(),
-            'alats' => Alat::select('id', 'nama_alat')->get(),
+            'peminjams' => User::select('id', 'name')
+                ->where('role', 'peminjam')
+                ->orderBy('name')
+                ->get(),
+            'alats' => Alat::select('id', 'nama_alat')->orderBy('nama_alat')->get(),
             'allowedStatuses' => $this->allowedStatuses,
         ]);
     }

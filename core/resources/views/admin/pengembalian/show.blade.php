@@ -21,11 +21,10 @@
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
         <div>
             <h2 class="fw-bold mb-1">Detail Pengembalian</h2>
-            <p class="text-muted mb-0">Ringkasan lengkap proses pengembalian beserta bukti dan informasi peminjaman.</p>
         </div>
         <div class="d-flex justify-content-end gap-2 mt-auto">
             <a href="{{ route('pengembalian.list') }}" class="btn btn-outline-secondary">
-                Batal
+                Kembali
             </a>
             <a href="{{ route('pengembalian.edit', $pengembalian->id) }}" class="btn btn-primary">
                 Edit
@@ -37,7 +36,6 @@
         <div class="col-lg-7">
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body">
-                    <h5 class="fw-semibold mb-3">Informasi Pengembalian</h5>
                     <table class="table table-borderless mb-0">
                         <tr>
                             <th width="35%" class="text-muted">Tanggal Pengembalian</th>
@@ -76,7 +74,6 @@
                                 style="object-fit: cover;">
                         </div>
                         <div class="d-flex justify-content-between flex-wrap gap-2 small text-muted">
-                            <span>{{ $file->file_name ?? ($file->nama_file ?? 'Tanpa nama') }}</span>
                             <a href="{{ $filePreview }}" class="text-decoration-none" target="_blank" rel="noopener">Lihat
                                 ukuran penuh</a>
                         </div>

@@ -8,8 +8,8 @@
 
 <div class="col-md-2 sidebar p-3">
 	<div class="d-flex align-items-center mb-4 px-2">
-		<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-			<i class="bi bi-circle-fill"></i>
+		<div class="me-2" style="width: 40px; height: 40px;">
+			<img src="{{ asset('storage/uploads/logo/Lendify.png') }}" alt="Lendify" class="img-fluid rounded-circle" style="object-fit: cover; width: 40px; height: 40px;">
 		</div>
 		<h5 class="mb-0 fw-bold">Lendify</h5>
 	</div>

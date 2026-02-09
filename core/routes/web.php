@@ -96,4 +96,8 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::delete('{id}', 'deleteImage')->name('filemanager.delete');
         });
     });
+
+    Route::prefix('staff')->middleware('role:petugas')->group(function () {
+        
+    });
 });
