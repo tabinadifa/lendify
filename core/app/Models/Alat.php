@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Alat extends Model
 {
+    use \App\Traits\LogsActivity;
+
     protected $table = 'alat';
 
     protected $fillable = [

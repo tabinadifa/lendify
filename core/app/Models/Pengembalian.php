@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pengembalian extends Model
 {
+    use \App\Traits\LogsActivity;
+
     protected $table = 'pengembalian';
 
     protected $fillable = [

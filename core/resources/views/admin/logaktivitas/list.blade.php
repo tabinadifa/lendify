@@ -43,29 +43,6 @@
         </div>
     </div>
 
-    <div class="card filter-card mb-4">
-        <div class="card-body">
-            <form method="GET" class="row g-3 align-items-end">
-                <div class="col-md-2">
-                    <label for="action" class="form-label text-uppercase text-muted small">Filter Aksi</label>
-                    <select id="action" name="action" class="form-select" onchange="this.form.submit()">
-                        <option value="">Semua Aksi</option>
-                        <option value="create" @selected(request('action') == 'create')>Create</option>
-                        <option value="update" @selected(request('action') == 'update')>Update</option>
-                        <option value="delete" @selected(request('action') == 'delete')>Delete</option>
-                        <option value="login" @selected(request('action') == 'login')>Login</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="search" class="form-label text-uppercase text-muted small">Pencarian</label>
-                    <input type="text" id="search" name="search" class="form-control"
-                        placeholder="Cari user, deskripsi, atau subject..." value="{{ request('search') }}"
-                        onkeydown="if(event.key==='Enter'){this.form.submit()}">
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div class="card table-card">
         <div class="card-body p-0">
             @if ($logs->isEmpty())
@@ -84,7 +61,6 @@
                                 <th style="width: 30%;">Deskripsi</th>
                                 <th style="width: 15%;">Model / Subject</th>
                                 <th style="width: 15%;">Waktu</th>
-                                <th style="width: 10%;">Detail</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -117,34 +93,7 @@
                                         <div>{{ $log->created_at->format('d M Y') }}</div>
                                         <div class="small text-muted">{{ $log->created_at->format('H:i:s') }}</div>
                                     </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#logModal{{ $log->id }}">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        
-                                        <!-- Modal Detail -->
-                                        <div class="modal fade" id="logModal{{ $log->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Detail Aktivitas</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p><strong>IP Address:</strong> {{ $log->ip_address }}</p>
-                                                        <p><strong>User Agent:</strong> {{ $log->user_agent }}</p>
-                                                        <hr>
-                                                        <h6>Perubahan Data:</h6>
-                                                        @if($log->properties)
-                                                            <pre class="bg-light p-2 rounded small" style="max-height: 200px; overflow-y: auto;">{{ json_encode($log->properties, JSON_PRETTY_PRINT) }}</pre>
-                                                        @else
-                                                            <span class="text-muted">Tidak ada data properti.</span>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
+                                    
                                 </tr>
                             @endforeach
                         </tbody>

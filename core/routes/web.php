@@ -14,6 +14,7 @@ use App\Http\Controllers\Petugas\Pengembalian\PengembalianController as PetugasP
 use App\Http\Controllers\Peminjam\Peminjaman\PeminjamanController;
 use App\Http\Controllers\Peminjam\Riwayat\RiwayatController;
 use App\Http\Controllers\FileManager\FileManagerController;
+use App\Http\Controllers\Admin\LogAktivitas\LogAktivitasController;
 use App\Http\Controllers\Peminjam\Pengembalian\PengembalianController;
 use Illuminate\Support\Facades\Auth;
 
@@ -99,6 +100,10 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::get('/', 'listImages')->name('filemanager.list');
             Route::post('upload', 'uploadImage')->name('filemanager.upload');
             Route::delete('{id}', 'deleteImage')->name('filemanager.delete');
+        });
+
+        Route::controller(LogAktivitasController::class)->prefix('log-aktivitas')->group(function () {
+            Route::get('/', 'index')->name('admin.log.index');
         });
     });
 
