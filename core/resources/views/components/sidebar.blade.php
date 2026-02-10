@@ -32,8 +32,7 @@
 			<a class="nav-link {{ $currentRoute === 'petugas.pengembalian.list' ? 'active' : '' }}" href="{{ route('petugas.pengembalian.list') }}" data-nav-link><i class="bi bi-eye me-2"></i>Memantau Pengembalian</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-printer me-2"></i>Mencetak Laporan</a>
 		@elseif($role === 'peminjam')
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-list-ul me-2"></i>Daftar Alat</a>
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-plus-circle me-2"></i>Ajukan Peminjaman</a>
+			<a class="nav-link {{ $currentRoute === 'peminjam.peminjaman.list' ? 'active' : '' }}" href="{{ route('peminjam.peminjaman.list') }}" data-nav-link><i class="bi bi-plus-circle me-2"></i>Ajukan Peminjaman</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-arrow-return-right me-2"></i>Pengembalian Saya</a>
 			<a class="nav-link" href="#" data-nav-link><i class="bi bi-clock-history me-2"></i>Riwayat Peminjaman</a>
 		@endif

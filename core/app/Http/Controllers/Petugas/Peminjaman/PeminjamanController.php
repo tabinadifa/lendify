@@ -70,6 +70,25 @@ class PeminjamanController extends Controller
         ]);
     }
 
+    public function show(Peminjaman $peminjaman)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('auth.login')
+                ->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        $peminjaman->loadMissing(
+            'peminjam:id,name,username,email',
+            'alat:id,nama_alat,kategori_id',
+            'alat.kategori:id,nama_kategori'
+        );
+
+        return view('petugas.peminjaman.show', [
+            'peminjaman' => $peminjaman,
+            'allowedStatuses' => $this->allowedStatuses,
+        ]);
+    }
+
     public function updateStatus(Request $request, Peminjaman $peminjaman)
     {
         if (!Auth::check()) {

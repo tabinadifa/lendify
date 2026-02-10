@@ -42,7 +42,7 @@
 @endpush
 
 @section('content')
-	@php
+		@php
 		$statusLabels = [
 			'pending' => 'Menunggu Persetujuan',
 			'approve' => 'Disetujui',
@@ -121,57 +121,41 @@
 				<table class="table table-hover mb-0">
 					<thead>
 						<tr>
-							<th style="width: 70px;">No</th>
 							<th>Data Peminjam</th>
 							<th>Nama Alat</th>
-							<th class="text-center">Total Alat</th>
 							<th>Tanggal Pinjam</th>
 							<th>Tanggal Kembali</th>
 							<th>Status</th>
-							<th>Alasan Ditolak</th>
-							<th class="text-center" style="width: 160px;">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
 						@forelse ($peminjaman as $item)
 							<tr>
-								<td class="fw-semibold">{{ ($peminjaman->firstItem() ?? 0) + $loop->index }}</td>
 								<td>
 									<div class="fw-semibold">{{ $item->peminjam->name }}</div>
 									<div class="small text-muted">{{ $item->peminjam->email }}</div>
+									<a href="{{ route('petugas.peminjaman.show', $item) }}" class="small fw-semibold text-decoration-none">
+										Lihat detail
+									</a>
 								</td>
-								<td>
-									<div class="fw-semibold">{{ $item->alat->nama_alat }}</div>
-								</td>
-								<td class="text-center fw-semibold">{{ number_format($item->total_alat) }} Unit</td>
+								<td class="fw-semibold">{{ $item->alat->nama_alat }}</td>
 								<td>{{ $formatDate($item->tanggal_pinjam) }}</td>
 								<td>{{ $formatDate($item->tanggal_kembali) }}</td>
 								<td>
 									<span class="badge status-badge {{ $statusBadges[$item->status] ?? 'bg-secondary' }}">
 										{{ $statusLabels[$item->status] ?? ucfirst($item->status) }}
 									</span>
-								</td>
-								<td>
-									@if ($item->status === 'rejected')
-										<span class="text-danger">{{ $item->alasan_ditolak ?? 'Tidak ada alasan tercatat' }}</span>
-									@else
-										<span class="text-muted">&mdash;</span>
-									@endif
-								</td>
-								<td class="text-center">
-									@if ($item->status === 'returned')
-										<span class="badge bg-secondary">Sudah Dikembalikan</span>
-									@else
-										<button type="button" class="btn btn-outline-success btn-sm"
+									@if ($item->status !== 'returned')
+										<button type="button" class="btn btn-outline-success btn-sm ms-2"
 											data-bs-toggle="modal" data-bs-target="#statusModal-{{ $item->id }}">
-											<i class="bi bi-arrow-repeat"></i> Ubah Status
+											Ubah Status
 										</button>
 									@endif
 								</td>
 							</tr>
 						@empty
 							<tr>
-								<td colspan="9" class="text-center py-5">
+								<td colspan="5" class="text-center py-5">
 									<div class="text-muted">
 										<i class="bi bi-inbox me-2"></i> Data peminjaman tidak ditemukan
 									</div>
@@ -196,12 +180,12 @@
 		</div>
 	</div>
 
-	@foreach ($peminjaman as $item)
+		@foreach ($peminjaman as $item)
 		@php
 			$isModalReopened = old('peminjaman_id') && (int) old('peminjaman_id') === $item->id;
 			$selectedStatus = $isModalReopened ? old('status') : $item->status;
 			$reasonValue = $isModalReopened ? old('alasan_ditolak') : $item->alasan_ditolak;
-			$shouldShowReason = $selectedStatus === 'rejected';
+				$shouldShowReason = $selectedStatus === 'rejected';
 		@endphp
 
 		@continue($item->status === 'returned')
@@ -227,7 +211,7 @@
 								<label for="statusSelect-{{ $item->id }}" class="form-label">Status Peminjaman</label>
 								<select id="statusSelect-{{ $item->id }}" name="status" class="form-select"
 									data-reason-toggle="reasonField-{{ $item->id }}">
-									@foreach (['pending', 'approve', 'rejected', 'returned'] as $status)
+									@foreach ($allowedStatuses as $status)
 										<option value="{{ $status }}" @selected($selectedStatus === $status)>
 											{{ $statusLabels[$status] ?? ucfirst($status) }}
 										</option>
