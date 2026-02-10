@@ -48,7 +48,7 @@
                     <table class="table table-borderless mb-0">
                         <tr>
                             <th width="35%" class="text-muted">Tanggal Pengembalian</th>
-                            <td>{{ $pengembalian->tanggal_pengembalian ? \Illuminate\Support\Carbon::parse($pengembalian->tanggal_pengembalian)->translatedFormat('d M Y H:i') : '-' }}
+                            <td>{{ $pengembalian->tanggal_pengembalian ? \Illuminate\Support\Carbon::parse($pengembalian->tanggal_pengembalian)->translatedFormat('d M Y') : '-' }}
                             </td>
                         </tr>
                         <tr>
@@ -120,12 +120,12 @@
                         </tr>
                         <tr>
                             <th class="text-muted">Tanggal Pinjam</th>
-                            <td>{{ $peminjaman?->tanggal_pinjam ? \Illuminate\Support\Carbon::parse($peminjaman->tanggal_pinjam)->translatedFormat('d M Y H:i') : '-' }}
+                            <td>{{ $peminjaman?->tanggal_pinjam ? \Illuminate\Support\Carbon::parse($peminjaman->tanggal_pinjam)->translatedFormat('d M Y') : '-' }}
                             </td>
                         </tr>
                         <tr>
                             <th class="text-muted">Batas Kembali</th>
-                            <td>{{ $peminjaman?->tanggal_kembali ? \Illuminate\Support\Carbon::parse($peminjaman->tanggal_kembali)->translatedFormat('d M Y H:i') : '-' }}
+                            <td>{{ $peminjaman?->tanggal_kembali ? \Illuminate\Support\Carbon::parse($peminjaman->tanggal_kembali)->translatedFormat('d M Y') : '-' }}
                             </td>
                         </tr>
                         <tr>

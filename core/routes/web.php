@@ -12,8 +12,9 @@ use App\Http\Controllers\Admin\Pengembalian\PengembalianController as AdminPenge
 use App\Http\Controllers\Petugas\Peminjaman\PeminjamanController as PetugasPeminjamanController;
 use App\Http\Controllers\Petugas\Pengembalian\PengembalianController as PetugasPengembalianController;
 use App\Http\Controllers\Peminjam\Peminjaman\PeminjamanController;
-use App\Http\Controllers\Peminjam\Riwayat\RiwayatController as PeminjamRiwayatController;
+use App\Http\Controllers\Peminjam\Riwayat\RiwayatController;
 use App\Http\Controllers\FileManager\FileManagerController;
+use App\Http\Controllers\Peminjam\Pengembalian\PengembalianController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -126,8 +127,13 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::post('/', 'store')->name('peminjam.peminjaman.store');
         });
 
-        Route::controller(PeminjamRiwayatController::class)->prefix('riwayat')->group(function () {
-            Route::get('peminjaman', 'listPeminjamanUser')->name('peminjam.riwayat.peminjaman');
+        Route::controller(RiwayatController::class)->prefix('riwayat')->group(function () {
+            Route::get('peminjaman', 'listPeminjamanUser')->name('peminjam.riwayat.list');
+        });
+
+        Route::controller(PengembalianController::class)->prefix('pengembalian')->group(function () {
+            Route::get('/', 'listPengembalian')->name('peminjam.pengembalian.list');
+            Route::get('{pengembalian}', 'show')->name('peminjam.pengembalian.show');
         });
         
     });

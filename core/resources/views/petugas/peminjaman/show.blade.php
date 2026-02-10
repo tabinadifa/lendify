@@ -26,7 +26,7 @@
 
 			$instance = \Illuminate\Support\Carbon::parse($date);
 			return $withTime
-				? $instance->translatedFormat('d M Y H:i')
+				? $instance->translatedFormat('d M Y')
 				: $instance->translatedFormat('d M Y');
 		};
 	@endphp

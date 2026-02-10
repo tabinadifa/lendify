@@ -200,7 +200,7 @@ class PengembalianController extends Controller
 
         $pengembalian->loadMissing(
             'peminjaman.alat:id,nama_alat',
-            'peminjaman.peminjam:id,name,username'
+            'peminjaman.peminjam:id,name,username,email'
         );
 
         $peminjamans = Peminjaman::with([
@@ -266,7 +266,7 @@ class PengembalianController extends Controller
         ]);
 
         return redirect()
-            ->route('petugas.pengembalian.list')
+            ->route('pengembalian.list')
             ->with('success', 'Data pengembalian berhasil diperbarui.');
     }
 
@@ -274,7 +274,7 @@ class PengembalianController extends Controller
     {
         $isLate = $peminjaman->tanggal_kembali
             && Carbon::parse($validated['tanggal_pengembalian'])
-                ->gt(Carbon::parse($peminjaman->tanggal_kembali));
+            ->gt(Carbon::parse($peminjaman->tanggal_kembali));
 
         if ($isLate && ((float) ($validated['denda'] ?? 0) <= 0)) {
             throw ValidationException::withMessages([

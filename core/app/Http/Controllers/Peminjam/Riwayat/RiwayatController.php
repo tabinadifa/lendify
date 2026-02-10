@@ -68,7 +68,7 @@ class RiwayatController extends Controller
             'returned' => 'bg-secondary',
         ];
 
-        return view('peminjam.riwayat.peminjaman', [
+        return view('peminjam.riwayat.list', [
             'riwayats' => $riwayats,
             'statusLabels' => $statusLabels,
             'statusBadges' => $statusBadges,

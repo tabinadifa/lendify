@@ -84,7 +84,6 @@
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                <a href="{{ route('filemanager.list') }}" target="_blank" rel="noopener" class="btn btn-outline-success">Kelola File</a>
             </div>
         </div>
     </div>

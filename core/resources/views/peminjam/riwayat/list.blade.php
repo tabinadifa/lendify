@@ -31,7 +31,7 @@
         };
         $formatDateTime = static function ($date) {
             return $date
-                ? \Carbon\Carbon::parse($date)->locale('id')->translatedFormat('d M Y H:i')
+                ? \Carbon\Carbon::parse($date)->locale('id')->translatedFormat('d M Y')
                 : null;
         };
     @endphp
@@ -104,7 +104,7 @@
                             <tr>
                                 <td>
                                     <div class="fw-semibold">{{ $item->alat->nama_alat ?? '-' }}</div>
-                                    <div class="text-muted small">{{ number_format($item->total_alat) }} Unit</div>
+                                    <div class="text-muted small">Jumlah: {{ number_format($item->total_alat) }}</div>
                                 </td>
                                 <td>
                                     <div class="fw-semibold">{{ $formatDate($item->tanggal_pinjam) }}</div>
