@@ -24,10 +24,6 @@
                             </button>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <div class="alert alert-success d-none" id="uploadSuccess">File berhasil diupload!</div>
-                        <div class="alert alert-danger d-none" id="uploadError">Gagal mengupload file.</div>
-                    </div>
                 </form>
                 
                 <div id="filesContainer">
@@ -43,7 +39,6 @@
                                     <tr>
                                         <th style="width: 80px;">Preview</th>
                                         <th>Nama File</th>
-                                        <th>Tanggal</th>
                                         <th class="text-end">Aksi</th>
                                     </tr>
                                 </thead>
@@ -53,9 +48,12 @@
                                             $previewPath = asset($file->path ?? $file->file_path);
                                             $fileName = $file->nama_file ?? $file->file_name ?? 'Tanpa nama';
                                         @endphp
-                                        <tr>
+                                        <tr data-file-row="{{ $file->id }}">
                                             <td>
-                                                <div class="rounded overflow-hidden border" style="width: 64px; height: 64px;">
+                                                <div class="rounded overflow-hidden border" style="width: 64px; height: 64px; cursor: zoom-in;"
+                                                    data-file-preview
+                                                    data-file-url="{{ $previewPath }}"
+                                                    data-file-name="{{ $fileName }}">
                                                     <img src="{{ $previewPath }}" alt="{{ $fileName }}" class="w-100 h-100 object-fit-cover">
                                                 </div>
                                             </td>
@@ -63,11 +61,18 @@
                                                 <div class="fw-semibold">{{ $fileName }}</div>
                                                 <div class="text-muted small">ID: {{ $file->id }}</div>
                                             </td>
-                                            <td>{{ $file->created_at?->format('d M Y H:i') ?? '-' }}</td>
                                             <td class="text-end">
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="{{ $file->id }}">
-                                                    Gunakan
-                                                </button>
+                                                <div class="d-flex justify-content-end gap-2">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-file-preview data-file-url="{{ $previewPath }}" data-file-name="{{ $fileName }}">
+                                                        Lihat
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="{{ $file->id }}">
+                                                        Gunakan
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-file-delete data-file-id="{{ $file->id }}" data-file-name="{{ $fileName }}">
+                                                        Hapus
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -84,4 +89,73 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold" id="imagePreviewModalLabel">Pratinjau Gambar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagePreviewModalImage" src="" alt="Pratinjau gambar" class="img-fluid rounded-4 shadow-sm">
+            </div>
+            <div class="modal-footer border-0">
+                <p class="text-muted mb-0 me-auto small" id="imagePreviewModalName"></p>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@once
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const modalElement = document.getElementById('imagePreviewModal');
+                if (!modalElement) {
+                    return;
+                }
+
+                const previewImage = document.getElementById('imagePreviewModalImage');
+                const previewName = document.getElementById('imagePreviewModalName');
+                const bootstrapModal = window.bootstrap ? new bootstrap.Modal(modalElement) : null;
+
+                function openPreview(url, name) {
+                    if (!url) {
+                        return;
+                    }
+
+                    if (previewImage) {
+                        previewImage.src = url;
+                        previewImage.alt = name || 'Pratinjau gambar';
+                    }
+
+                    if (previewName) {
+                        previewName.textContent = name || 'Pratinjau gambar';
+                    }
+
+                    if (bootstrapModal) {
+                        bootstrapModal.show();
+                    } else {
+                        window.open(url, '_blank');
+                    }
+                }
+
+                document.addEventListener('click', (event) => {
+                    const trigger = event.target.closest('[data-file-preview]');
+                    if (!trigger) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    const url = trigger.getAttribute('data-file-url');
+                    const name = trigger.getAttribute('data-file-name') || 'Pratinjau gambar';
+                    openPreview(url, name);
+                });
+            });
+        </script>
+    @endpush
+@endonce
 

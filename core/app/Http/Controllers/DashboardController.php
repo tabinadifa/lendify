@@ -100,6 +100,15 @@ class DashboardController extends Controller
             ->where('status', 'approve')
             ->orderByDesc('tanggal_kembali')
             ->limit(3)
-            ->get();
+            ->get()
+            ->map(function ($loan) use ($today) {
+                $dueDate = $loan->tanggal_kembali ? Carbon::parse($loan->tanggal_kembali) : null;
+
+                $loan->late_days = $dueDate
+                    ? max(1, (int) ceil($dueDate->diffInHours($today) / 24))
+                    : 0;
+
+                return $loan;
+            });
     }
 }

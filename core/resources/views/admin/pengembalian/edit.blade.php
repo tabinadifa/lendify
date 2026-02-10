@@ -72,10 +72,6 @@
 						$currentStatusKey = $currentPeminjaman->status ?? 'unknown';
 						$currentStatusLabel = $statusLabels[$currentStatusKey] ?? ucfirst($currentStatusKey);
 					@endphp
-					<div class="alert alert-warning border-0 rounded-3 mb-4">
-						Peminjaman yang sedang terhubung memiliki status <strong>{{ $currentStatusLabel }}</strong>
-						sehingga tidak tampil pada daftar di bawah. Anda masih dapat menggantinya dengan peminjaman berstatus approve.
-					</div>
 				@endif
 
 				<div class="d-flex flex-wrap gap-3 align-items-center">
@@ -398,9 +394,189 @@
 			const uploadButton = document.getElementById('uploadButton');
 			const uploadSuccess = document.getElementById('uploadSuccess');
 			const uploadError = document.getElementById('uploadError');
+			const filesContainer = document.getElementById('filesContainer');
+			const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? document.querySelector('input[name="_token"]')?.value ?? '';
+			const deleteRouteTemplate = @json(route('filemanager.delete', ['id' => '__ID__']));
 
 			if (fileModalElement && window.bootstrap) {
 				fileModal = new bootstrap.Modal(fileModalElement);
+			}
+
+			function hideFileAlerts() {
+				if (uploadSuccess) {
+					uploadSuccess.classList.add('d-none');
+				}
+				if (uploadError) {
+					uploadError.classList.add('d-none');
+				}
+			}
+
+			function showSuccessMessage(message) {
+				if (!uploadSuccess) {
+					return;
+				}
+				uploadSuccess.textContent = message;
+				uploadSuccess.classList.remove('d-none');
+				setTimeout(() => uploadSuccess && uploadSuccess.classList.add('d-none'), 3000);
+			}
+
+			function showErrorMessage(message) {
+				if (!uploadError) {
+					return;
+				}
+				uploadError.textContent = message;
+				uploadError.classList.remove('d-none');
+			}
+
+			function renderEmptyFilesState() {
+				if (!filesContainer) {
+					return;
+				}
+				filesContainer.innerHTML = `
+					<div class="text-center py-4" id="emptyState">
+						<i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
+						<p class="text-muted mt-3 mb-0">Belum ada file yang dapat dipilih.</p>
+					</div>
+				`;
+			}
+
+			function removeFileOption(fileId) {
+				if (!fileSelect) {
+					return;
+				}
+				const option = Array.from(fileSelect.options).find((opt) => opt.value === String(fileId));
+				if (option) {
+					option.remove();
+				}
+			}
+
+			function attachFileActions(row) {
+				if (!row) {
+					return;
+				}
+
+				const pickButton = row.querySelector('[data-file-pick]');
+				if (pickButton) {
+					pickButton.addEventListener('click', () => {
+						const id = pickButton.dataset.fileId;
+						if (!id) {
+							return;
+						}
+						selectFileOption(id);
+						if (fileModal) {
+							fileModal.hide();
+						}
+					});
+				}
+
+				const deleteButton = row.querySelector('[data-file-delete]');
+				if (deleteButton) {
+					deleteButton.addEventListener('click', () => {
+						const fileId = deleteButton.dataset.fileId;
+						if (!fileId) {
+							return;
+						}
+						handleFileDelete(fileId, deleteButton);
+					});
+				}
+			}
+
+			async function handleFileDelete(fileId, triggerButton) {
+				if (!csrfToken) {
+					showErrorMessage('Token CSRF tidak ditemukan. Muat ulang halaman.');
+					return;
+				}
+
+				const fileName = triggerButton?.dataset?.fileName ?? 'file ini';
+				let confirmed = true;
+
+				if (typeof Swal !== 'undefined') {
+					const result = await Swal.fire({
+						title: 'Hapus gambar?',
+						text: `Anda akan menghapus ${fileName}. Tindakan ini tidak bisa dibatalkan.`,
+						icon: 'warning',
+						showCancelButton: true,
+						confirmButtonText: 'Ya, hapus',
+						cancelButtonText: 'Batal',
+						confirmButtonColor: '#d33',
+						cancelButtonColor: '#6c757d'
+					});
+					confirmed = result.isConfirmed;
+				} else if (!window.confirm(`Hapus ${fileName}?`)) {
+					confirmed = false;
+				}
+
+				if (!confirmed) {
+					return;
+				}
+
+				const originalHtml = triggerButton.innerHTML;
+				triggerButton.disabled = true;
+				triggerButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+				try {
+					const response = await fetch(deleteRouteTemplate.replace('__ID__', fileId), {
+						method: 'DELETE',
+						headers: {
+							'X-CSRF-TOKEN': csrfToken,
+							'X-Requested-With': 'XMLHttpRequest',
+							'Accept': 'application/json'
+						}
+					});
+
+					let data = {};
+					try {
+						data = await response.json();
+					} catch (parseError) {
+						console.error('Failed to parse delete response', parseError);
+					}
+
+					if (!response.ok || !data.success) {
+						throw new Error(data.message || 'Gagal menghapus file.');
+					}
+
+					const row = triggerButton.closest('[data-file-row]');
+					if (row) {
+						row.remove();
+					}
+
+					removeFileOption(fileId);
+
+					if (fileSelect && fileSelect.value === String(fileId)) {
+						fileSelect.value = '';
+						fileSelect.dispatchEvent(new Event('change'));
+					}
+
+					const tbody = document.getElementById('filesTableBody');
+					if (!tbody || !tbody.children.length) {
+						renderEmptyFilesState();
+					}
+
+					showSuccessMessage('Gambar berhasil dihapus.');
+
+					if (typeof Swal !== 'undefined') {
+						await Swal.fire({
+							title: 'Terhapus',
+							text: 'Gambar berhasil dihapus.',
+							icon: 'success',
+							timer: 1800,
+							showConfirmButton: false
+						});
+					}
+				} catch (error) {
+					console.error('Delete error:', error);
+					showErrorMessage(error.message || 'Gagal menghapus file.');
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({
+							title: 'Gagal',
+							text: error.message || 'Gagal menghapus file.',
+							icon: 'error'
+						});
+					}
+				} finally {
+					triggerButton.disabled = false;
+					triggerButton.innerHTML = originalHtml;
+				}
 			}
 
 			function formatDisplayDate(value) {
@@ -579,7 +755,6 @@
 								<tr>
 									<th style="width: 80px;">Preview</th>
 									<th>Nama File</th>
-									<th>Tanggal</th>
 									<th class="text-end">Aksi</th>
 								</tr>
 							</thead>
@@ -597,20 +772,13 @@
 				}
 
 				const row = document.createElement('tr');
+				row.dataset.fileRow = String(file.id);
 				const previewPath = file.path || file.file_path;
 				const fileName = file.nama_file || file.file_name || 'Tanpa nama';
-				const date = new Date(file.created_at || Date.now());
-				const formattedDate = date.toLocaleDateString('id-ID', {
-					day: '2-digit',
-					month: 'short',
-					year: 'numeric',
-					hour: '2-digit',
-					minute: '2-digit'
-				});
 
 				row.innerHTML = `
 			<td>
-				<div class="rounded overflow-hidden border" style="width: 64px; height: 64px;">
+				<div class="rounded overflow-hidden border" data-preview-box style="width: 64px; height: 64px; cursor: zoom-in;">
 					<img src="${previewPath}" alt="${fileName}" class="w-100 h-100 object-fit-cover">
 				</div>
 			</td>
@@ -618,25 +786,43 @@
 				<div class="fw-semibold">${fileName}</div>
 				<div class="text-muted small">ID: ${file.id}</div>
 			</td>
-			<td>${formattedDate}</td>
 			<td class="text-end">
-				<button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="${file.id}">
-					Gunakan
-				</button>
+				<div class="d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-sm btn-outline-secondary" data-preview-trigger>
+						Lihat
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="${file.id}">
+						Gunakan
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-danger" data-file-delete data-file-id="${file.id}">
+						Hapus
+					</button>
+				</div>
 			</td>
 		`;
 
 				tbody.insertBefore(row, tbody.firstChild);
 
-				const pickButton = row.querySelector('[data-file-pick]');
-				if (pickButton) {
-					pickButton.addEventListener('click', () => {
-						selectFileOption(file.id);
-						if (fileModal) {
-							fileModal.hide();
-						}
-					});
+				const previewBox = row.querySelector('[data-preview-box]');
+				if (previewBox) {
+					previewBox.setAttribute('data-file-preview', '');
+					previewBox.setAttribute('data-file-url', previewPath);
+					previewBox.setAttribute('data-file-name', fileName);
 				}
+
+				const previewTrigger = row.querySelector('[data-preview-trigger]');
+				if (previewTrigger) {
+					previewTrigger.setAttribute('data-file-preview', '');
+					previewTrigger.setAttribute('data-file-url', previewPath);
+					previewTrigger.setAttribute('data-file-name', fileName);
+				}
+
+				const deleteButton = row.querySelector('[data-file-delete]');
+				if (deleteButton) {
+					deleteButton.dataset.fileName = fileName;
+				}
+
+				attachFileActions(row);
 			}
 
 			function addFileToSelect(file) {
@@ -669,8 +855,7 @@
 					uploadButton.disabled = true;
 					uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
 
-					if (uploadSuccess) uploadSuccess.classList.add('d-none');
-					if (uploadError) uploadError.classList.add('d-none');
+					hideFileAlerts();
 
 					try {
 						const response = await fetch('{{ route('filemanager.upload') }}', {
@@ -685,9 +870,7 @@
 						const data = await response.json();
 
 						if (response.ok && data.success) {
-							if (uploadSuccess) {
-								uploadSuccess.classList.remove('d-none');
-							}
+							showSuccessMessage('Gambar berhasil diupload!');
 							uploadForm.reset();
 
 							if (data.file) {
@@ -695,20 +878,11 @@
 								addFileToSelect(data.file);
 								selectFileOption(data.file.id);
 							}
-
-							setTimeout(() => {
-								if (uploadSuccess) {
-									uploadSuccess.classList.add('d-none');
-								}
-							}, 3000);
 						} else {
 							throw new Error(data.message || 'Upload gagal');
 						}
 					} catch (error) {
-						if (uploadError) {
-							uploadError.textContent = error.message || 'Gagal mengupload file.';
-							uploadError.classList.remove('d-none');
-						}
+						showErrorMessage(error.message || 'Gagal mengupload file.');
 						console.error('Upload error:', error);
 					} finally {
 						uploadButton.disabled = false;
@@ -778,18 +952,7 @@
 				});
 			});
 
-			document.querySelectorAll('[data-file-pick]').forEach((button) => {
-				button.addEventListener('click', () => {
-					const id = button.dataset.fileId;
-					if (!id) {
-						return;
-					}
-					selectFileOption(id);
-					if (fileModal) {
-						fileModal.hide();
-					}
-				});
-			});
+			document.querySelectorAll('[data-file-row]').forEach((row) => attachFileActions(row));
 
 			highlightSelectedRow();
 			updateSummary();

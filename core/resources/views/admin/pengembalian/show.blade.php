@@ -78,13 +78,22 @@
                 <div class="card-body">
                     <h5 class="fw-semibold mb-3">Bukti Pengembalian</h5>
                     @if ($file && $filePreview)
-                        <div class="ratio ratio-16x9 rounded-4 overflow-hidden mb-3">
-                            <img src="{{ $filePreview }}" alt="Bukti Pengembalian" class="w-100 h-100"
+                        @php
+                            $fileName = $file->nama_file ?? ($file->file_name ?? 'Bukti pengembalian');
+                        @endphp
+                        <div class="ratio ratio-16x9 rounded-4 overflow-hidden mb-3 position-relative cursor-pointer"
+                            style="cursor: zoom-in;" data-return-preview data-return-preview-url="{{ $filePreview }}"
+                            data-return-preview-name="{{ $fileName }}">
+                            <img src="{{ $filePreview }}" alt="{{ $fileName }}" class="w-100 h-100"
                                 style="object-fit: cover;">
+                            <span
+                                class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded-pill small">
+                                Klik untuk lihat detail
+                            </span>
                         </div>
                         <div class="d-flex justify-content-between flex-wrap gap-2 small text-muted">
-                            <a href="{{ $filePreview }}" class="text-decoration-none" target="_blank" rel="noopener">Lihat
-                                ukuran penuh</a>
+                            <a href="{{ $filePreview }}" class="text-decoration-none" target="_blank" rel="noopener">Buka
+                                di tab baru</a>
                         </div>
                     @else
                         <div class="text-center text-muted py-4">
@@ -138,7 +147,74 @@
                     </div>
                     <div>
                         <p class="text-muted mb-1">Alat</p>
+                        <div class="modal fade" id="returnImagePreviewModal" tabindex="-1"
+                            aria-labelledby="returnImagePreviewLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header border-0">
+                                        <h5 class="modal-title fw-semibold" id="returnImagePreviewLabel">Pratinjau Gambar
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img id="returnPreviewImage" src="" alt="Pratinjau gambar"
+                                            class="img-fluid rounded-4 shadow-sm">
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <p class="text-muted mb-0 me-auto small" id="returnPreviewName"></p>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Tutup</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <p class="fw-semibold mb-0">{{ $alat->nama_alat ?? '-' }}</p>
+
+                        @push('scripts')
+                            <script>
+                                document.addEventListener('DOMContentLoaded', () => {
+                                    const modalElement = document.getElementById('returnImagePreviewModal');
+                                    if (!modalElement) {
+                                        return;
+                                    }
+
+                                    const previewImg = document.getElementById('returnPreviewImage');
+                                    const previewName = document.getElementById('returnPreviewName');
+                                    const modalInstance = window.bootstrap ? new bootstrap.Modal(modalElement) : null;
+
+                                    function openPreview(url, name) {
+                                        if (!url) {
+                                            return;
+                                        }
+
+                                        if (previewImg) {
+                                            previewImg.src = url;
+                                            previewImg.alt = name || 'Pratinjau gambar';
+                                        }
+
+                                        if (previewName) {
+                                            previewName.textContent = name || 'Pratinjau gambar';
+                                        }
+
+                                        if (modalInstance) {
+                                            modalInstance.show();
+                                        } else {
+                                            window.open(url, '_blank');
+                                        }
+                                    }
+
+                                    document.querySelectorAll('[data-return-preview]').forEach((trigger) => {
+                                        trigger.addEventListener('click', (event) => {
+                                            event.preventDefault();
+                                            const url = trigger.getAttribute('data-return-preview-url');
+                                            const name = trigger.getAttribute('data-return-preview-name');
+                                            openPreview(url, name);
+                                        });
+                                    });
+                                });
+                            </script>
+                        @endpush
                         @if ($alat?->kategori)
                             <span class="badge text-bg-secondary">{{ $alat->kategori->nama_kategori }}</span>
                         @endif

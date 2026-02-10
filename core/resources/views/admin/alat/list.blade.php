@@ -51,7 +51,7 @@
                            name="search"
                            value="{{ request('search') }}"
                            class="form-control"
-                           placeholder="Cari nama alat, kategori..."
+                           placeholder="Cari nama alat..."
                            onkeydown="if(event.key==='Enter'){this.form.submit()}">
                 </div>
             </form>

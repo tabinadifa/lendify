@@ -117,9 +117,11 @@
 						<p class="text-muted text-uppercase small mt-3 mb-2">Terlambat</p>
 						@foreach ($reminders['overdue'] as $loan)
 							@php
-								$lateDays = $loan->tanggal_kembali
-									? \Illuminate\Support\Carbon::parse($loan->tanggal_kembali)->diffInDays(now())
-									: 0;
+								$lateDays = $loan->late_days ?? (
+									$loan->tanggal_kembali
+										? max(1, (int) ceil(\Illuminate\Support\Carbon::parse($loan->tanggal_kembali)->diffInHours(now()) / 24))
+										: 0
+								);
 							@endphp
 							<div class="p-3 rounded mb-2" style="background-color: #FEE2E2;">
 								<div class="d-flex align-items-center">
