@@ -132,7 +132,7 @@ class PengembalianController extends Controller
                 ]);
             }
 
-            if ($peminjaman->status === 'dikembalikan') {
+            if ($peminjaman->status === 'returned') {
                 throw ValidationException::withMessages([
                     'peminjaman_id' => 'Peminjaman ini sudah dikembalikan.',
                 ]);
@@ -158,7 +158,7 @@ class PengembalianController extends Controller
             AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat);
 
             $peminjaman->update([
-                'status' => 'dikembalikan',
+                'status' => 'returned',
             ]);
         });
 
@@ -198,9 +198,28 @@ class PengembalianController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        $pengembalian->loadMissing(
+            'peminjaman.alat:id,nama_alat',
+            'peminjaman.peminjam:id,name,username'
+        );
+
+        $peminjamans = Peminjaman::with([
+            'alat:id,nama_alat',
+            'peminjam:id,name,username',
+        ])->select(
+            'id',
+            'alat_id',
+            'peminjam_id',
+            'tanggal_pinjam',
+            'tanggal_kembali',
+            'status'
+        )->where('status', 'approve')
+            ->orderByDesc('tanggal_pinjam')
+            ->get();
+
         return view('admin.pengembalian.edit', [
             'pengembalian' => $pengembalian,
-            'peminjamans' => Peminjaman::with('alat')->select('id', 'alat_id')->get(),
+            'peminjamans' => $peminjamans,
             'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')
                 ->orderByDesc('created_at')
                 ->get(),

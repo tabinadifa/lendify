@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Kategori\KategoriController as AdminKategoriContr
 use App\Http\Controllers\Admin\Alat\AlatController as AdminAlatController;
 use App\Http\Controllers\Admin\Peminjaman\PeminjamanController as AdminPeminjamanController;
 use App\Http\Controllers\Admin\Pengembalian\PengembalianController as AdminPengembalianController;
+use App\Http\Controllers\Petugas\Peminjaman\PeminjamanController as PetugasPeminjamanController;
 use App\Http\Controllers\FileManager\FileManagerController;
 use Illuminate\Support\Facades\Auth;
 
@@ -98,6 +99,9 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
     });
 
     Route::prefix('staff')->middleware('role:petugas')->group(function () {
-        
+        Route::controller(PetugasPeminjamanController::class)->prefix('peminjaman')->group(function () {
+            Route::get('/', 'listPeminjaman')->name('petugas.peminjaman.list');
+            Route::patch('{peminjaman}/status', 'updateStatus')->name('petugas.peminjaman.update-status');
+        });
     });
 });

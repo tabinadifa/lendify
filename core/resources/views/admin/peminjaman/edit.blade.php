@@ -3,6 +3,15 @@
 @section('title', 'Edit Peminjaman - Lendify')
 
 @section('content')
+@php
+    $statusLabels = [
+        'pending' => 'Menunggu Persetujuan',
+        'approve' => 'Disetujui',
+        'rejected' => 'Ditolak',
+        'returned' => 'Dikembalikan',
+    ];
+@endphp
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0">Edit Peminjaman</h2>
 </div>
@@ -49,6 +58,7 @@
                        class="form-control"
                        value="{{ $peminjaman->peminjam->name }}"
                        disabled>
+                <input type="hidden" name="peminjam_id" value="{{ $peminjaman->peminjam_id }}">
             </div>
 
             {{-- Tanggal Pinjam --}}
@@ -98,7 +108,7 @@
                     @foreach ($allowedStatuses as $status)
                         <option value="{{ $status }}"
                             {{ old('status', $peminjaman->status) === $status ? 'selected' : '' }}>
-                            {{ ucfirst($status) }}
+                            {{ $statusLabels[$status] ?? ucfirst($status) }}
                         </option>
                     @endforeach
                 </select>
@@ -112,7 +122,7 @@
                     id="alasan_ditolak"
                     rows="3"
                     class="form-control"
-                    placeholder="Wajib diisi jika status rejected"
+                    placeholder="Wajib diisi jika status ditolak"
                 >{{ old('alasan_ditolak', $peminjaman->alasan_ditolak) }}</textarea>
             </div>
 

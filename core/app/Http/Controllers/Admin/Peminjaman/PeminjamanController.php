@@ -177,7 +177,6 @@ class PeminjamanController extends Controller
             'alasan_ditolak' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // Jika status bukan rejected, alasan ditolak dikosongkan
         if ($validated['status'] !== 'rejected') {
             $validated['alasan_ditolak'] = null;
         }

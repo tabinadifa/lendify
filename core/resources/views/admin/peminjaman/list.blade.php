@@ -3,6 +3,15 @@
 @section('title', 'Daftar Peminjaman - Lendify')
 
 @section('content')
+@php
+    $statusLabels = [
+        'pending' => 'Menunggu Persetujuan',
+        'approve' => 'Disetujui',
+        'rejected' => 'Ditolak',
+        'returned' => 'Dikembalikan',
+    ];
+@endphp
+
     <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
         <h2 class="fw-bold mb-0">Daftar Peminjaman</h2>
     </div>
@@ -76,11 +85,12 @@
                                         $badge = match ($item->status) {
                                             'approve' => 'success',
                                             'rejected' => 'danger',
-                                            default => 'warning',
+                                            'pending' => 'warning',
+                                            'returned' => 'primary',
                                         };
                                     @endphp
                                     <span class="badge bg-{{ $badge }}">
-                                        {{ ucfirst($item->status) }}
+                                        {{ $statusLabels[$item->status] ?? ucfirst($item->status) }}
                                     </span>
                                 </td>
                                 <td class="text-center">

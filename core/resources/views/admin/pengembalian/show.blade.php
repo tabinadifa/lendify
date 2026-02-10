@@ -4,6 +4,14 @@
 
 @section('content')
     @php
+        $statusLabels = [
+            'pending' => 'Menunggu Persetujuan',
+            'approve' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            'returned' => 'Dikembalikan',
+            'dikembalikan' => 'Dikembalikan',
+        ];
+
         $peminjaman = $pengembalian->peminjaman;
         $borrower = $peminjaman?->peminjam;
         $alat = $peminjaman?->alat;
@@ -12,9 +20,10 @@
         $dendaValue = (float) ($pengembalian->denda ?? 0);
         $badge = match ($peminjaman?->status) {
             'approve' => 'success',
-            'dikembalikan' => 'primary',
+            'returned', 'dikembalikan' => 'primary',
             'rejected' => 'danger',
-            default => 'warning',
+            'pending' => 'warning',
+            default => 'secondary',
         };
     @endphp
 
@@ -94,8 +103,10 @@
                     <table class="table table-borderless mb-0">
                         <tr>
                             <th width="40%" class="text-muted">Status</th>
-                            <td><span
-                                    class="badge bg-{{ $badge }}">{{ ucfirst($peminjaman?->status ?? 'pending') }}</span>
+                            <td>
+                                <span class="badge bg-{{ $badge }}">
+                                    {{ $statusLabels[$peminjaman?->status] ?? ucfirst($peminjaman?->status ?? 'pending') }}
+                                </span>
                             </td>
                         </tr>
                         <tr>

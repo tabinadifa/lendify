@@ -6,11 +6,22 @@
     @php
         $statusClasses = [
             'pending' => 'text-bg-warning',
+            'approve' => 'text-bg-primary',
             'approved' => 'text-bg-primary',
             'borrowed' => 'text-bg-info',
             'rejected' => 'text-bg-danger',
             'returned' => 'text-bg-success',
         ];
+
+        $statusLabels = [
+            'pending' => 'Menunggu Persetujuan',
+            'approve' => 'Disetujui',
+            'approved' => 'Disetujui',
+            'borrowed' => 'Sedang Dipinjam',
+            'rejected' => 'Ditolak',
+            'returned' => 'Dikembalikan',
+        ];
+
         $today = now()->format('Y-m-d');
     @endphp
 
@@ -72,8 +83,9 @@
                                         ? \Illuminate\Support\Carbon::parse($peminjaman->tanggal_kembali)
                                         : null;
                                     $isOverdueNow = $dueDate ? $dueDate->isPast() : false;
-                                    $statusLabel = ucfirst($peminjaman->status ?? 'pending');
-                                    $statusClass = $statusClasses[$peminjaman->status] ?? 'text-bg-secondary';
+                                    $statusKey = $peminjaman->status ?? 'pending';
+                                    $statusLabel = $statusLabels[$statusKey] ?? ucfirst($statusKey);
+                                    $statusClass = $statusClasses[$statusKey] ?? 'text-bg-secondary';
                                 @endphp
                                 <tr class="peminjaman-row" data-peminjaman-row="{{ $peminjaman->id }}"
                                     data-peminjaman-nama="{{ $peminjaman->peminjam->name ?? '-' }}"
@@ -156,8 +168,9 @@
                     $dueDate = $peminjaman->tanggal_kembali
                         ? \Illuminate\Support\Carbon::parse($peminjaman->tanggal_kembali)
                         : null;
-                    $statusLabel = ucfirst($peminjaman->status ?? 'pending');
-                    $statusClass = $statusClasses[$peminjaman->status] ?? 'text-bg-secondary';
+                    $statusKey = $peminjaman->status ?? 'pending';
+                    $statusLabel = $statusLabels[$statusKey] ?? ucfirst($statusKey);
+                    $statusClass = $statusClasses[$statusKey] ?? 'text-bg-secondary';
                     $isOverdueNow = $dueDate ? $dueDate->isPast() : false;
                 @endphp
                 <option value="{{ $peminjaman->id }}" data-peminjam="{{ $peminjaman->peminjam->name ?? '-' }}"

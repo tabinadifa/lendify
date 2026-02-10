@@ -32,6 +32,7 @@ class PeminjamanController extends Controller
             'tanggal_pinjam',
             'tanggal_kembali',
             'status',
+            'alasan_ditolak',
             'created_at'
         );
 
@@ -63,7 +64,7 @@ class PeminjamanController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('peminjaman.list', [
+        return view('petugas.peminjaman.list', [
             'peminjaman' => $peminjaman,
             'allowedStatuses' => $this->allowedStatuses,
         ]);
@@ -76,8 +77,18 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        if ($peminjaman->status === 'returned') {
+            return back()->with('info', 'Peminjaman sudah dikembalikan sehingga status tidak dapat diubah.');
+        }
+
         $validated = $request->validate([
             'status' => ['required', Rule::in($this->allowedStatuses)],
+            'alasan_ditolak' => [
+                Rule::requiredIf(fn () => $request->input('status') === 'rejected'),
+                'nullable',
+                'string',
+                'max:255',
+            ],
         ]);
 
         if ($peminjaman->status === $validated['status']) {
@@ -101,6 +112,9 @@ class PeminjamanController extends Controller
 
             $peminjaman->update([
                 'status' => $validated['status'],
+                'alasan_ditolak' => $validated['status'] === 'rejected'
+                    ? ($validated['alasan_ditolak'] ?? null)
+                    : null,
             ]);
 
             if ($validated['status'] === 'approve' && $previousStatus !== 'approve') {

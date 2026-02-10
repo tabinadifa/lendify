@@ -5,6 +5,12 @@
 @section('content')
 @php
     $today = now()->format('Y-m-d');
+    $statusLabels = [
+        'pending' => 'Menunggu Persetujuan',
+        'approve' => 'Disetujui',
+        'rejected' => 'Ditolak',
+        'returned' => 'Dikembalikan',
+    ];
 @endphp
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -89,14 +95,11 @@
             <div class="col-md-6">
                 <label for="status" class="form-label">Status</label>
                 <select name="status" id="status" class="form-select">
-                    <option value="pending" selected>Pending</option>
                     @foreach ($allowedStatuses as $status)
-                        @if ($status !== 'pending')
-                            <option value="{{ $status }}"
-                                {{ old('status') == $status ? 'selected' : '' }}>
-                                {{ ucfirst($status) }}
-                            </option>
-                        @endif
+                        <option value="{{ $status }}"
+                            {{ old('status', 'pending') == $status ? 'selected' : '' }}>
+                            {{ $statusLabels[$status] ?? ucfirst($status) }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -123,7 +126,7 @@
                     id="alasan_ditolak"
                     rows="3"
                     class="form-control"
-                    placeholder="Isi jika status rejected"
+                    placeholder="Isi jika status ditolak"
                 >{{ old('alasan_ditolak') }}</textarea>
             </div>
 
