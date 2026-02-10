@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\Pengembalian\PengembalianController as AdminPenge
 use App\Http\Controllers\Petugas\Peminjaman\PeminjamanController as PetugasPeminjamanController;
 use App\Http\Controllers\Petugas\Pengembalian\PengembalianController as PetugasPengembalianController;
 use App\Http\Controllers\Peminjam\Peminjaman\PeminjamanController;
+use App\Http\Controllers\Peminjam\Riwayat\RiwayatController as PeminjamRiwayatController;
 use App\Http\Controllers\FileManager\FileManagerController;
 use Illuminate\Support\Facades\Auth;
 
@@ -123,6 +124,10 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::get('/', 'listAlat')->name('peminjam.peminjaman.list');
             Route::get('{alat}/pinjam', 'create')->name('peminjam.peminjaman.create');
             Route::post('/', 'store')->name('peminjam.peminjaman.store');
+        });
+
+        Route::controller(PeminjamRiwayatController::class)->prefix('riwayat')->group(function () {
+            Route::get('peminjaman', 'listPeminjamanUser')->name('peminjam.riwayat.peminjaman');
         });
         
     });
