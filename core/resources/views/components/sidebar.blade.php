@@ -26,15 +26,15 @@
 			<a class="nav-link {{ $currentRoute === 'alat.list' ? 'active' : '' }}" href="{{ route('alat.list') }}" data-nav-link><i class="bi bi-box-seam me-2"></i>Alat</a>
 			<a class="nav-link {{ $isPeminjamanMenu ? 'active' : '' }}" href="{{ route('peminjaman.list') }}" data-nav-link><i class="bi bi-clipboard-check me-2"></i>Peminjaman</a>
 			<a class="nav-link {{ $isPengembalianMenu ? 'active' : '' }}" href="{{ route('pengembalian.list') }}" data-nav-link><i class="bi bi-arrow-return-left me-2"></i>Pengembalian</a>
-			<a class="nav-link {{ $currentRoute === 'admin.log.index' ? 'acive' : '' }}" href="{{ route('admin.log.index') }}" data-nav-link><i class="bi bi-clock-history me-2"></i>Log Aktivitas</a>
+			<a class="nav-link {{ $currentRoute === 'admin.log.index' ? 'active' : '' }}" href="{{ route('admin.log.index') }}" data-nav-link><i class="bi bi-clock-history me-2"></i>Log Aktivitas</a>
 		@elseif($role === 'petugas')
 			<a class="nav-link {{ $currentRoute === 'petugas.peminjaman.list' ? 'active' : '' }}" href="{{ route('petugas.peminjaman.list') }}" data-nav-link><i class="bi bi-check-circle me-2"></i>Menyetujui Peminjaman</a>
 			<a class="nav-link {{ $currentRoute === 'petugas.pengembalian.list' ? 'active' : '' }}" href="{{ route('petugas.pengembalian.list') }}" data-nav-link><i class="bi bi-eye me-2"></i>Memantau Pengembalian</a>
-			<a class="nav-link" href="#" data-nav-link><i class="bi bi-printer me-2"></i>Mencetak Laporan</a>
+			<a class="nav-link {{ $currentRoute === 'petugas.laporan.index' ? 'active' : '' }}" href="{{ route('petugas.laporan.index') }}" data-nav-link><i class="bi bi-printer me-2"></i>Mencetak Laporan</a>
 		@elseif($role === 'peminjam')
 			<a class="nav-link {{ $currentRoute === 'peminjam.peminjaman.list' ? 'active' : '' }}" href="{{ route('peminjam.peminjaman.list') }}" data-nav-link><i class="bi bi-plus-circle me-2"></i>Ajukan Peminjaman</a>
 			<a class="nav-link {{ $currentRoute === 'peminjam.pengembalian.list' ? 'active' : '' }}" href="{{ route('peminjam.pengembalian.list') }}" data-nav-link><i class="bi bi-arrow-return-right me-2"></i>Pengembalian Saya</a>
-			<a class="nav-link" href="{{ route('peminjam.riwayat.list') }}" data-nav-link><i class="bi bi-clock-history me-2"></i>Riwayat Peminjaman</a>
+			<a class="nav-link {{ $currentRoute === 'peminjam.riwayat.list' ? 'active' : '' }}" href="{{ route('peminjam.riwayat.list') }}" data-nav-link><i class="bi bi-clock-history me-2"></i>Riwayat Peminjaman</a>
 		@endif
 	</nav>
 

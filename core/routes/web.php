@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\Peminjaman\PeminjamanController as AdminPeminjama
 use App\Http\Controllers\Admin\Pengembalian\PengembalianController as AdminPengembalianController;
 use App\Http\Controllers\Petugas\Peminjaman\PeminjamanController as PetugasPeminjamanController;
 use App\Http\Controllers\Petugas\Pengembalian\PengembalianController as PetugasPengembalianController;
+use App\Http\Controllers\Petugas\Laporan\LaporanController as PetugasLaporanController;
 use App\Http\Controllers\Peminjam\Peminjaman\PeminjamanController;
 use App\Http\Controllers\Peminjam\Riwayat\RiwayatController;
 use App\Http\Controllers\FileManager\FileManagerController;
@@ -47,7 +48,6 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
     });
 
     Route::prefix('admin')->middleware('role:admin')->group(function () {
-
         Route::controller(AdminUserController::class)->prefix('users')->group(function () {
             Route::get('/', 'listUsers')->name('user.list');
             Route::get('create', 'create')->name('user.create');
@@ -122,10 +122,14 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::get('{pengembalian}/edit', 'edit')->name('petugas.pengembalian.edit');
             Route::put('{pengembalian}', 'update')->name('petugas.pengembalian.update');
         });
+
+        Route::controller(PetugasLaporanController::class)->prefix('laporan')->group(function () {
+            Route::get('/', 'index')->name('petugas.laporan.index');
+            Route::get('export', 'export')->name('petugas.laporan.export');
+        });
     });
 
     Route::middleware('role:peminjam')->group(function () {
-
         Route::controller(PeminjamanController::class)->prefix('peminjaman')->group(function () {
             Route::get('/', 'listAlat')->name('peminjam.peminjaman.list');
             Route::get('{alat}/pinjam', 'create')->name('peminjam.peminjaman.create');
@@ -140,6 +144,5 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::get('/', 'listPengembalian')->name('peminjam.pengembalian.list');
             Route::get('{pengembalian}', 'show')->name('peminjam.pengembalian.show');
         });
-        
     });
 });
