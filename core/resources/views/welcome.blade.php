@@ -143,10 +143,10 @@
                 <div class="row justify-content-center text-center">
                     <div class="col-lg-8">
                         <h1 class="display-4 fw-bold mb-4" style="color: var(--lendify-dark);">
-                            Kelola Peminjaman Alat Laboratorium dengan Mudah
+                            Kelola Peminjaman Alat dengan Mudah
                         </h1>
                         <p class="lead text-muted mb-5">
-                            Platform digital untuk manajemen peminjaman dan pengembalian alat laboratorium
+                            Platform digital untuk manajemen peminjaman dan pengembalian alat
                         </p>
                         <div class="d-flex gap-3 justify-content-center flex-wrap">
                             @auth
@@ -170,7 +170,7 @@
                     <div class="col-lg-8">
                         <h2 class="fw-bold mb-3" style="color: var(--lendify-dark);">Tentang Lendify</h2>
                         <p class="lead text-muted">
-                            Lendify adalah platform manajemen peminjaman alat laboratorium yang dirancang untuk mempermudah proses peminjaman, monitoring stok, dan pencatatan aktivitas.
+                            Lendify adalah platform manajemen peminjaman alat yang dirancang untuk mempermudah proses peminjaman, monitoring stok, dan pencatatan aktivitas.
                         </p>
                     </div>
                 </div>
