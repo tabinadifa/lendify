@@ -8,10 +8,6 @@
             <h2 class="fw-bold mb-1">Profil Pengguna</h2>
             <p class="text-muted mb-0">Kelola informasi akun dan preferensi penggunaan sistem.</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1"></i>Reset</button>
-            <button class="btn btn-success"><i class="bi bi-save me-1"></i>Simpan Perubahan</button>
-        </div>
     </div>
 
     <div class="row g-4">
