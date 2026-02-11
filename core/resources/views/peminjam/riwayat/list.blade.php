@@ -46,14 +46,6 @@
         </div>
     </div>
 
-    @foreach (['success', 'error', 'info'] as $type)
-        @if (session($type))
-            <div class="alert alert-{{ $type === 'error' ? 'danger' : $type }} border-0 shadow-sm rounded-4 mb-4">
-                {{ session($type) }}
-            </div>
-        @endif
-    @endforeach
-
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
@@ -97,6 +89,7 @@
                             <th>Jadwal Peminjaman</th>
                             <th>Status</th>
                             <th>Pengembalian</th>
+                            <th class="text-start">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -139,10 +132,23 @@
                                         <span class="text-muted">Belum ada data</span>
                                     @endif
                                 </td>
+                                <td class="text-start">
+                                    <form action="{{ route('peminjam.riwayat.destroy', $item) }}" method="POST"
+                                        class="d-inline-block form-hapus"
+                                        data-title="Hapus riwayat ini?"
+                                        data-text="Riwayat peminjaman akan dihapus secara permanen.">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                            <span class="ms-1">Hapus</span>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">
+                                <td colspan="5" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox me-2"></i> Belum ada riwayat peminjaman.
                                 </td>
                             </tr>

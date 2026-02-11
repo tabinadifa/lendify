@@ -13,7 +13,7 @@
 @endpush
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
         <h2 class="fw-bold mb-0">Daftar Pengguna</h2>
     </div>
 

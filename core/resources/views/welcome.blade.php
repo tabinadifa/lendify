@@ -268,10 +268,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
-                        <p class="mb-0">© {{ now()->year }} Lendify. Platform Manajemen Peminjaman Alat Laboratorium.</p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <p class="mb-0">Dibuat untuk kemudahan pengelolaan laboratorium</p>
+                        <p class="mb-0">© {{ now()->year }} Lendify.</p>
                     </div>
                 </div>
             </div>

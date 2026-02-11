@@ -138,6 +138,7 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
 
         Route::controller(RiwayatController::class)->prefix('riwayat')->group(function () {
             Route::get('peminjaman', 'listPeminjamanUser')->name('peminjam.riwayat.list');
+            Route::delete('peminjaman/{peminjaman}', 'destroy')->name('peminjam.riwayat.destroy');
         });
 
         Route::controller(PengembalianController::class)->prefix('pengembalian')->group(function () {

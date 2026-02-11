@@ -90,8 +90,11 @@
             <x-sidebar :role="session('user_role', 'admin')" />
 
             <!-- Main Content -->
-            <div class="col-md-10 p-4">
-                @yield('content')
+            <div class="col-md-10 p-0">
+                <x-header />
+                <div class="p-4">
+                    @yield('content')
+                </div>
             </div>
         </div>
     </div>

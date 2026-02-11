@@ -21,16 +21,19 @@
 		}
 
 		.alat-card {
-			border: 1px solid #eef2f0;
+			border: 1px solid rgba(30, 77, 53, 0.12);
 			border-radius: 1rem;
 			padding: 1.5rem;
 			height: 100%;
-			transition: border-color 0.2s ease, transform 0.2s ease;
+			transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.2s ease;
+			box-shadow: 0 15px 35px rgba(30, 77, 53, 0.16), 0 6px 14px rgba(0, 0, 0, 0.08);
 		}
 
 		.alat-card:hover {
 			border-color: #1e4d35;
-			transform: translateY(-2px);
+			border-width: 1.5px;
+			transform: translateY(-4px);
+			box-shadow: 0 24px 45px rgba(30, 77, 53, 0.2), 0 12px 24px rgba(0, 0, 0, 0.1);
 		}
 
 		.alat-description {
@@ -55,14 +58,6 @@
 			<span class="text-muted small">Tersedia {{ number_format($alats->total()) }} alat aktif</span>
 		</div>
 	</div>
-
-	@foreach (['success', 'error', 'info'] as $type)
-		@if (session($type))
-			<div class="alert alert-{{ $type === 'error' ? 'danger' : $type }} border-0 shadow-sm rounded-4 mb-4">
-				{{ session($type) }}
-			</div>
-		@endif
-	@endforeach
 
 	<div class="card filter-card mb-4">
 		<div class="card-body">

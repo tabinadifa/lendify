@@ -1,11 +1,13 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers\Peminjam\Riwayat;
 
 use App\Http\Controllers\Controller;
 use App\Models\Peminjaman;
+use App\Services\AlatStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class RiwayatController extends Controller
 {
@@ -74,5 +76,26 @@ class RiwayatController extends Controller
             'statusBadges' => $statusBadges,
             'allowedStatuses' => $this->allowedStatuses,
         ]);
+    }
+
+    public function destroy(Peminjaman $peminjaman)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('auth.login')
+                ->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+
+        DB::transaction(function () use ($peminjaman) {
+            if ($peminjaman->status === 'approve') {
+                AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat);
+            }
+
+            $peminjaman->delete();
+        });
+
+        return redirect()
+            ->route('peminjam.riwayat.list')
+            ->with('success', 'Data peminjaman berhasil dihapus.');
     }
 }
