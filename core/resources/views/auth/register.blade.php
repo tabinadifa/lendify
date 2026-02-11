@@ -52,3 +52,36 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[action="{{ route('auth.register.process') }}"]');
+    if (!form) return;
+
+    form.addEventListener('submit', function (event) {
+        const password = form.querySelector('input[name="password"]');
+        const confirmation = form.querySelector('input[name="password_confirmation"]');
+        if (password && confirmation && password.value !== confirmation.value) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Password tidak sama',
+                text: 'Pastikan password dan konfirmasi password sudah sesuai.',
+                icon: 'error',
+                confirmButtonColor: '#90AB8B'
+            });
+        }
+    });
+
+    const emailError = @json($errors->first('email'));
+    if (emailError) {
+        Swal.fire({
+            title: 'Email sudah terdaftar',
+            text: emailError,
+            icon: 'error',
+            confirmButtonColor: '#90AB8B'
+        });
+    }
+});
+</script>
+@endpush
