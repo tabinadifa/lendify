@@ -2,8 +2,12 @@
 	$userName = optional(auth()->user())->name ?? session('user_name') ?? 'Pengguna';
 @endphp
 
-<header class="d-flex align-items-center justify-content-end gap-2 py-3 px-4 bg-white border-bottom shadow-sm">
-	<div class="dropdown">
+<header class="d-flex align-items-center justify-content-between gap-3 py-3 px-4 bg-white border-bottom shadow-sm flex-wrap">
+	<button type="button" class="btn btn-outline-secondary d-lg-none" aria-label="Buka menu" onclick="toggleSidebar()">
+		<i class="bi bi-list"></i>
+	</button>
+
+	<div class="dropdown ms-auto">
 		<button class="btn btn-link text-decoration-none text-dark dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
 			<i class="bi bi-person-circle fs-5 text-secondary"></i>
 			<span class="fw-semibold">{{ $userName }}</span>

@@ -6,12 +6,15 @@
 	$isFileManagerMenu = str_starts_with($currentRoute ?? '', 'filemanager.');
 @endphp
 
-<div class="col-md-2 sidebar p-3">
-	<div class="d-flex align-items-center mb-4 px-2">
+<div class="sidebar p-3">
+	<div class="d-flex align-items-center gap-2 mb-4 px-2">
 		<div class="me-2" style="width: 40px; height: 40px;">
 			<img src="{{ asset('storage/uploads/logo/Lendify.png') }}" alt="Lendify" class="img-fluid rounded-circle" style="object-fit: cover; width: 40px; height: 40px;">
 		</div>
-		<h5 class="mb-0 fw-bold">Lendify</h5>
+		<h5 class="mb-0 fw-bold flex-grow-1">Lendify</h5>
+		<button type="button" class="btn btn-sm btn-outline-secondary d-lg-none" aria-label="Tutup menu" onclick="toggleSidebar(false)">
+			<i class="bi bi-x-lg"></i>
+		</button>
 	</div>
 	
 	<p class="text-muted px-2 mb-3" style="font-size: 0.75rem;">MENU</p>
@@ -57,7 +60,11 @@
 	.sidebar {
 		background-color: white;
 		min-height: 100vh;
+		width: 260px;
 		box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+		position: relative;
+		z-index: 999;
+		transition: transform 0.3s ease;
 	}
 
 	.nav-item {
@@ -77,6 +84,17 @@
 		background-color: #E8F5E9;
 		color: #2D6F4E;
 	}
+
+	@media (max-width: 991.98px) {
+		.sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 100vh;
+			transform: translateX(-100%);
+			overflow-y: auto;
+		}
+	}
 </style>
 
 @push('scripts')
@@ -89,6 +107,9 @@ document.addEventListener('DOMContentLoaded', function () {
 		link.addEventListener('click', function () {
 			navLinks.forEach(item => item.classList.remove('active'));
 			this.classList.add('active');
+			if (window.innerWidth < 992 && typeof window.toggleSidebar === 'function') {
+				window.toggleSidebar(false);
+			}
 		});
 	});
 });

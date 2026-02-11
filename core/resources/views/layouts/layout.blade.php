@@ -20,6 +20,43 @@
         body {
             background-color: #F5F7FA;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 998;
+        }
+
+        body.sidebar-open .sidebar-backdrop {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        body.sidebar-open .sidebar {
+            transform: translateX(0);
+        }
+
+        .content-wrapper {
+            padding: 1.5rem;
         }
 
         .metric-card {
@@ -78,31 +115,49 @@
             font-weight: 700;
             color: var(--dark-gray);
         }
+
+        @media (max-width: 991.98px) {
+            .content-wrapper {
+                padding: 1.25rem;
+            }
+
+            .main-content {
+                width: 100%;
+            }
+        }
     </style>
 
     @stack('styles')
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar Component -->
-            <x-sidebar :role="session('user_role', 'admin')" />
+    <div class="app-layout">
+        <!-- Sidebar Component -->
+        <x-sidebar :role="session('user_role', 'admin')" />
 
-            <!-- Main Content -->
-            <div class="col-md-10 p-0">
-                <x-header />
-                <div class="p-4">
-                    @yield('content')
-                </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <x-header />
+            <div class="content-wrapper">
+                @yield('content')
             </div>
         </div>
     </div>
+
+    <div class="sidebar-backdrop d-lg-none" onclick="toggleSidebar(false)"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        function toggleSidebar(forceState = null) {
+            const body = document.body;
+            const isOpen = body.classList.contains('sidebar-open');
+            const shouldOpen = forceState ?? !isOpen;
+            body.classList.toggle('sidebar-open', shouldOpen);
+        }
+        window.toggleSidebar = toggleSidebar;
+
         function confirmLogout(event) {
             event.preventDefault();
 
@@ -146,6 +201,12 @@
                         form.submit();
                     }
                 });
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 992) {
+                document.body.classList.remove('sidebar-open');
             }
         });
     </script>

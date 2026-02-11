@@ -54,7 +54,7 @@
             <div class="table-responsive">
                 <table class="table table-striped align-middle">
                     <thead class="table-light">
-                        <tr>
+                        <tr>z
                             <th>No</th>
                             <th>Peminjam</th>
                             <th>Alat</th>
