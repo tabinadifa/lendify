@@ -36,7 +36,11 @@
 
             <div class="col-md-6">
                 <label for="role" class="form-label">Role</label>
-                <input type="text" id="role" name="role" class="form-control" value="{{ old('role', $user->role) }}" required>
+                <select name="role" id="role" class="form-select" required>
+                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="peminjam" {{ old('role', $user->role) == 'peminjam' ? 'selected' : '' }}>Peminjam</option>
+                    <option value="petugas" {{ old('role', $user->role) == 'petugas' ? 'selected' : '' }}>Petugas</option>
+                </select>
             </div>
 
             <div class="col-12 d-flex justify-content-end gap-2">
