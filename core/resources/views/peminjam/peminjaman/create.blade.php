@@ -13,7 +13,6 @@
 			<h2 class="fw-bold mb-1">Ajukan Peminjaman</h2>
 			<p class="text-muted mb-0">Lengkapi formulir di bawah untuk meminjam alat pilihan Anda.</p>
 		</div>
-		<a href="{{ route('peminjam.peminjaman.list') }}" class="btn btn-outline-secondary">Kembali ke Daftar Alat</a>
 	</div>
 
 	@if ($errors->any())
