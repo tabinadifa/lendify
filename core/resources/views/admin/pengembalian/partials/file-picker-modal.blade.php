@@ -9,7 +9,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="modalUploadForm" class="border rounded-4 p-3 mb-4">
+                <form id="modalUploadForm" class="border rounded-4 p-3 mb-4" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="folder" value="bukti-pengembalian">
                     <div class="row g-3 align-items-end">
@@ -45,7 +45,7 @@
                                 <tbody id="filesTableBody">
                                     @foreach ($files as $file)
                                         @php
-                                            $previewPath = asset($file->path ?? $file->file_path);
+                                            $previewPath = asset($file->file_path ?? $file->path);
                                             $fileName = $file->nama_file ?? $file->file_name ?? 'Tanpa nama';
                                         @endphp
                                         <tr data-file-row="{{ $file->id }}">
