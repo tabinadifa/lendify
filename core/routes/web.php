@@ -78,11 +78,7 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
 
         Route::controller(AdminPeminjamanController::class)->prefix('peminjaman')->group(function () {
             Route::get('/', 'listPeminjaman')->name('peminjaman.list');
-            Route::get('create', 'create')->name('peminjaman.create');
-            Route::post('/', 'store')->name('peminjaman.store');
             Route::get('{peminjaman}', 'show')->name('peminjaman.show');
-            Route::get('{peminjaman}/edit', 'edit')->name('peminjaman.edit');
-            Route::put('{peminjaman}', 'update')->name('peminjaman.update');
             Route::delete('{peminjaman}', 'destroy')->name('peminjaman.destroy');
         });
 

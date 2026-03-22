@@ -96,6 +96,7 @@ class PengembalianController extends Controller
         return view('admin.pengembalian.create', [
             'peminjamans' => $peminjamans,
             'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')
+                ->where('file_path', 'like', '%bukti-pengembalian%')
                 ->orderByDesc('created_at')
                 ->get(),
         ]);
@@ -221,6 +222,7 @@ class PengembalianController extends Controller
             'pengembalian' => $pengembalian,
             'peminjamans' => $peminjamans,
             'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')
+                ->where('file_path', 'like', '%bukti-pengembalian%')
                 ->orderByDesc('created_at')
                 ->get(),
         ]);
@@ -291,7 +293,7 @@ class PengembalianController extends Controller
     {
         $isLate = $peminjaman->tanggal_kembali
             && Carbon::parse($validated['tanggal_pengembalian'])
-                ->gt(Carbon::parse($peminjaman->tanggal_kembali));
+            ->gt(Carbon::parse($peminjaman->tanggal_kembali));
 
         if ($isLate && ((float) ($validated['denda'] ?? 0) <= 0)) {
             throw ValidationException::withMessages([

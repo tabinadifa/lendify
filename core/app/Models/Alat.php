@@ -15,7 +15,8 @@ class Alat extends Model
         'kategori_id',
         'nama_alat',
         'deskripsi',
-        'jumlah_stok'
+        'jumlah_stok',
+        'gambar_alat_id'
     ];
 
     public function kategori()
@@ -26,5 +27,10 @@ class Alat extends Model
     public function peminjamans(): HasMany
     {
         return $this->hasMany(Peminjaman::class, 'alat_id');
+    }
+
+    public function gambarAlat()
+    {
+        return $this->belongsTo(FileManager::class, 'gambar_alat_id');
     }
 }

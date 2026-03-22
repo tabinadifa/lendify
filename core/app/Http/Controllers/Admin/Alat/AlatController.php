@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin\Alat;
 
 use App\Http\Controllers\Controller;
 use App\Models\Alat;
+use App\Models\FileManager;
 use App\Models\KategoriAlat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class AlatController extends Controller
 {
@@ -18,8 +18,8 @@ class AlatController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $query = Alat::with('kategori')
-            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'created_at');
+        $query = Alat::with('kategori', 'gambarAlat')
+            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'created_at', 'gambar_alat_id');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -50,22 +50,25 @@ class AlatController extends Controller
         }
 
         $kategoriAlats = KategoriAlat::orderBy('nama_kategori')->get();
-        return view('admin.alat.create', compact('kategoriAlats'));
+
+        return view('admin.alat.create', [
+            'kategoriAlats' => $kategoriAlats,
+            'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')
+                ->where('file_path', 'like', '%gambar-alat%')
+                ->orderByDesc('created_at')
+                ->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'kategori_id' => ['required', 'exists:kategori_alat,id'],
-                'nama_alat' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    'regex:/^[A-Za-z\s]+$/',
-                ],
-                'deskripsi' => ['nullable', 'string'],
-                'jumlah_stok' => ['required', 'integer', 'min:0'],
+                'kategori_id'    => ['required', 'exists:kategori_alat,id'],
+                'nama_alat'      => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
+                'deskripsi'      => ['nullable', 'string'],
+                'jumlah_stok'    => ['required', 'integer', 'min:0'],
+                'gambar_alat_id' => ['nullable', 'exists:file_managers,id'],
             ], [
                 'nama_alat.regex' => 'Nama alat hanya boleh berisi huruf dan spasi.',
             ]);
@@ -86,24 +89,32 @@ class AlatController extends Controller
 
     public function edit(Alat $alat)
     {
+        if (!Auth::check()) {
+            return redirect()->route('auth.login')
+                ->with('error', 'Silakan login terlebih dahulu.');
+        }
+
         $kategoriAlats = KategoriAlat::orderBy('nama_kategori')->get();
 
-        return view('admin.alat.edit', compact('alat', 'kategoriAlats'));
+        return view('admin.alat.edit', [
+            'alat'          => $alat,
+            'kategoriAlats' => $kategoriAlats,
+            'files'         => FileManager::select('id', 'file_name', 'file_path', 'created_at')
+                ->where('file_path', 'like', '%gambar-alat%')
+                ->orderByDesc('created_at')
+                ->get(),
+        ]);
     }
 
     public function update(Request $request, Alat $alat)
     {
         try {
             $validated = $request->validate([
-                'kategori_id' => ['required', 'exists:kategori_alat,id'],
-                'nama_alat' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    'regex:/^[A-Za-z\s]+$/',
-                ],
-                'deskripsi' => ['nullable', 'string'],
-                'jumlah_stok' => ['required', 'integer', 'min:0'],
+                'kategori_id'    => ['required', 'exists:kategori_alat,id'],
+                'nama_alat'      => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
+                'deskripsi'      => ['nullable', 'string'],
+                'jumlah_stok'    => ['required', 'integer', 'min:0'],
+                'gambar_alat_id' => ['nullable', 'exists:file_managers,id'],
             ], [
                 'nama_alat.regex' => 'Nama alat hanya boleh berisi huruf dan spasi.',
             ]);

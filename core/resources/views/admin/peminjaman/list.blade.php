@@ -31,11 +31,6 @@
 
             {{-- Controls --}}
             <form method="GET" class="row g-2 mb-3 align-items-center mt-2">
-                <div class="col-md-3">
-                    <a href="{{ route('peminjaman.create') }}" class="btn btn-success w-100">
-                        Tambah Peminjaman
-                    </a>
-                </div>
 
                 <div class="col-md-2">
                     <select name="per_page" class="form-select" onchange="this.form.submit()">
@@ -100,21 +95,7 @@
                                             Detail
                                         </a>
 
-                                        <a href="{{ route('peminjaman.edit', $item->id) }}"
-                                            class="btn btn-sm btn-outline-primary">
-                                            Edit
-                                        </a>
-
-                                        <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST"
-                                            class="form-hapus" data-title="Yakin ingin menghapus?"
-                                            data-text="Data peminjaman ini akan dihapus secara permanen.">
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                Hapus
-                                            </button>
-                                        </form>
+                                       
                                     </div>
                                 </td>
                             </tr>

@@ -18,8 +18,8 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $query = Alat::with('kategori')
-            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'created_at');
+        $query = Alat::with('kategori', 'gambarAlat')
+            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'created_at', 'gambar_alat_id');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -47,7 +47,8 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $alat = Alat::select('id', 'nama_alat', 'jumlah_stok')
+        $alat = Alat::with('gambarAlat')
+            ->select('id', 'nama_alat', 'jumlah_stok', 'gambar_alat_id')
             ->where('id', $alat->id)
             ->first();
 
