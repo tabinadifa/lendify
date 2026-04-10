@@ -84,14 +84,21 @@
 
                         <td>
                             @php
-                            $badge = match (strtolower($item->kondisi_alat)) {
+                            $kondisi = $item->kondisi_alat;
+                            // Ubah underscore menjadi spasi (jika ada) lalu kapital setiap kata
+                            $kondisiDisplay = str_replace('_', ' ', $kondisi);
+                            $kondisiDisplay = ucwords($kondisiDisplay);
+
+                            $badgeColor = match ($kondisi) {
                             'baik' => 'success',
-                            'rusak' => 'danger',
-                            default => 'warning',
+                            'rusak ringan' => 'warning',
+                            'rusak berat' => 'danger',
+                            'hilang' => 'dark',
+                            default => 'secondary',
                             };
                             @endphp
-                            <span class="badge bg-{{ $badge }}">
-                                {{ ucfirst($item->kondisi_alat) }}
+                            <span class="badge bg-{{ $badgeColor }}">
+                                {{ $kondisiDisplay }}
                             </span>
                         </td>
 

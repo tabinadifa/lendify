@@ -33,6 +33,19 @@
             optional($pengembalian->tanggal_pengembalian ? \Illuminate\Support\Carbon::parse($pengembalian->tanggal_pengembalian) : null)->format('Y-m-d')
         );
 
+        // Hitung denda telat dari data existing untuk menampilkan nilai denda_kondisi awal
+        $dueDateExisting = optional($pengembalian->peminjaman)->tanggal_kembali;
+        $dendaTelatAwal = 0;
+        if ($dueDateExisting && $pengembalian->tanggal_pengembalian) {
+            $tglKembali = \Illuminate\Support\Carbon::parse($dueDateExisting)->startOfDay();
+            $tglPengembalian = \Illuminate\Support\Carbon::parse($pengembalian->tanggal_pengembalian)->startOfDay();
+            if ($tglPengembalian->gt($tglKembali)) {
+                $hariTelat = $tglKembali->diffInDays($tglPengembalian);
+                $dendaTelatAwal = $hariTelat * 2000;
+            }
+        }
+        $dendaKondisiAwal = max(0, (float)($pengembalian->denda ?? 0) - $dendaTelatAwal);
+
         $selectedFileId = old('file_bukti_pengembalian_id', $pengembalian->file_bukti_pengembalian_id);
         $selectedFile = $selectedFileId ? $files->firstWhere('id', $selectedFileId) : null;
         $selectedFilePreview = $selectedFile ? asset($selectedFile->path ?? $selectedFile->file_path) : null;
@@ -253,9 +266,59 @@
                         </div>
                         <div class="col-md-6">
                             <label for="kondisi_alat" class="form-label">Kondisi Alat</label>
-                            <input type="text" id="kondisi_alat" name="kondisi_alat" class="form-control"
-                                placeholder="Contoh: Baik, lengkap" value="{{ old('kondisi_alat', $pengembalian->kondisi_alat) }}"
-                                required>
+                            <select name="kondisi_alat" id="kondisi_alat" class="form-select" required>
+                                <option value="">Pilih kondisi</option>
+                                <option value="baik" {{ old('kondisi_alat', $pengembalian->kondisi_alat) == 'baik' ? 'selected' : '' }}>Baik</option>
+                                <option value="rusak_ringan" {{ old('kondisi_alat', $pengembalian->kondisi_alat) == 'rusak ringan' ? 'selected' : '' }}>Rusak Ringan</option>
+                                <option value="rusak_berat" {{ old('kondisi_alat', $pengembalian->kondisi_alat) == 'rusak berat' ? 'selected' : '' }}>Rusak Berat</option>
+                                <option value="hilang" {{ old('kondisi_alat', $pengembalian->kondisi_alat) == 'hilang' ? 'selected' : '' }}>Hilang</option>
+                            </select>
+                        </div>
+                        <!-- Denda Kondisi Alat (dari petugas) -->
+                        <div class="col-md-6">
+                            <label for="denda_kondisi" class="form-label">Denda Kondisi Alat</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" id="denda_kondisi" name="denda_kondisi" class="form-control"
+                                    value="{{ old('denda_kondisi', $dendaKondisiAwal) }}" min="0" step="1000">
+                            </div>
+                            <small class="text-muted">Denda karena kerusakan/kehilangan (isi sesuai kondisi).</small>
+                        </div>
+                        <!-- Status Pembayaran Denda -->
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status Pembayaran Denda</label>
+                            <select name="status" id="status" class="form-select" required>
+                                <option value="">Pilih status</option>
+                                <option value="lunas" {{ old('status', $pengembalian->status) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                                <option value="belum_lunas" {{ old('status', $pengembalian->status) == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
+                            </select>
+                        </div>
+                        <!-- Metode Pembayaran -->
+                        <div class="col-md-6">
+                            <label for="metode_pembayaran" class="form-label">Metode Pembayaran</label>
+                            <select name="metode_pembayaran" id="metode_pembayaran" class="form-select">
+                                <option value="">Pilih metode</option>
+                                <option value="Tunai" {{ old('metode_pembayaran', $pengembalian->metode_pembayaran) == 'Tunai' ? 'selected' : '' }}>Tunai</option>
+                                <option value="QRIS" {{ old('metode_pembayaran', $pengembalian->metode_pembayaran) == 'QRIS' ? 'selected' : '' }}>QRIS</option>
+                            </select>
+                        </div>
+
+                        <!-- Tampilkan gambar QRIS jika metode = QRIS -->
+                        <div class="col-12" id="qrisContainer" style="display: none;">
+                            <div class="alert alert-info text-center p-3">
+                                <img src="{{ asset('uploads/qris.jpg') }}" alt="QRIS Code" style="max-width: 200px;" class="img-fluid rounded">
+                                <p class="mt-2 mb-0">Scan QRIS untuk melakukan pembayaran</p>
+                            </div>
+                        </div>
+
+                        <!-- Estimasi Total Denda (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label">Estimasi Total Denda</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="text" id="estimasi_total_denda" class="form-control" readonly disabled>
+                            </div>
+                            <small class="text-muted" id="info_denda_telat">Denda telat otomatis @ Rp2.000/hari.</small>
                         </div>
                         <div class="col-12">
                             <label for="catatan" class="form-label">Catatan (opsional)</label>
@@ -270,19 +333,6 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body d-flex flex-column gap-4">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label for="denda" class="form-label mb-0">Denda</label>
-                            <span class="badge text-bg-secondary" data-denda-badge>Opsional</span>
-                        </div>
-                        <div class="input-group">
-                            <span class="input-group-text">Rp</span>
-                            <input type="number" id="denda" name="denda" class="form-control"
-                                value="{{ old('denda', $pengembalian->denda) }}" min="0" step="1000">
-                        </div>
-                        <small class="text-muted" data-denda-message>Isi jika ada kerusakan, kehilangan, atau keterlambatan.</small>
-                    </div>
-
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="form-label mb-0" for="file_bukti_pengembalian_id">Gambar Bukti</label>
@@ -336,15 +386,12 @@
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
-
         .peminjaman-row.table-active {
             background-color: #f0f7f4;
         }
-
         .selected-summary {
             background: #f9fafb;
         }
-
         .selected-preview {
             width: 100%;
             height: 180px;
@@ -355,7 +402,6 @@
             justify-content: center;
             overflow: hidden;
         }
-
         .selected-preview img {
             width: 100%;
             height: 100%;
@@ -378,18 +424,37 @@
             const summaryStatus = document.querySelector('[data-summary-status]');
             const selectedAlert = document.querySelector('[data-selected-alert]');
             const tanggalPengembalianInput = document.getElementById('tanggal_pengembalian');
-            const dendaInput = document.getElementById('denda');
-            const dendaMessage = document.querySelector('[data-denda-message]');
-            const dendaBadge = document.querySelector('[data-denda-badge]');
+            const dendaKondisiInput = document.getElementById('denda_kondisi');
+            const estimasiTotalDendaSpan = document.getElementById('estimasi_total_denda');
+            const infoDendaTelatSpan = document.getElementById('info_denda_telat');
+            const metodeBayarSelect = document.getElementById('metode_pembayaran');
+            const qrisContainer = document.getElementById('qrisContainer');
             const searchInput = document.getElementById('searchPeminjaman');
             const fileSelect = document.getElementById('file_bukti_pengembalian_id');
             const fileNameTarget = document.querySelector('[data-file-name]');
             const filePreviewTarget = document.querySelector('[data-file-preview]');
             const fileModalElement = document.getElementById('filePickerModal');
             const todayValue = '{{ $today }}';
-            const allowPastDate = tanggalPengembalianInput?.dataset.allowPast === 'true';
             let fileModal = null;
 
+            // Fungsi untuk toggle QRIS image
+            function toggleQRIS() {
+                if (metodeBayarSelect && qrisContainer) {
+                    if (metodeBayarSelect.value === 'QRIS') {
+                        qrisContainer.style.display = 'block';
+                    } else {
+                        qrisContainer.style.display = 'none';
+                    }
+                }
+            }
+
+            // Panggil saat load dan saat select berubah
+            toggleQRIS();
+            if (metodeBayarSelect) {
+                metodeBayarSelect.addEventListener('change', toggleQRIS);
+            }
+
+            // AJAX Upload Elements (sama seperti create)
             const uploadForm = document.getElementById('modalUploadForm');
             const uploadButton = document.getElementById('uploadButton');
             const uploadSuccess = document.getElementById('uploadSuccess');
@@ -403,35 +468,25 @@
             }
 
             function hideFileAlerts() {
-                if (uploadSuccess) {
-                    uploadSuccess.classList.add('d-none');
-                }
-                if (uploadError) {
-                    uploadError.classList.add('d-none');
-                }
+                if (uploadSuccess) uploadSuccess.classList.add('d-none');
+                if (uploadError) uploadError.classList.add('d-none');
             }
 
             function showSuccessMessage(message) {
-                if (!uploadSuccess) {
-                    return;
-                }
+                if (!uploadSuccess) return;
                 uploadSuccess.textContent = message;
                 uploadSuccess.classList.remove('d-none');
                 setTimeout(() => uploadSuccess && uploadSuccess.classList.add('d-none'), 3000);
             }
 
             function showErrorMessage(message) {
-                if (!uploadError) {
-                    return;
-                }
+                if (!uploadError) return;
                 uploadError.textContent = message;
                 uploadError.classList.remove('d-none');
             }
 
             function renderEmptyFilesState() {
-                if (!filesContainer) {
-                    return;
-                }
+                if (!filesContainer) return;
                 filesContainer.innerHTML = `
                     <div class="text-center py-4" id="emptyState">
                         <i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
@@ -441,41 +496,27 @@
             }
 
             function removeFileOption(fileId) {
-                if (!fileSelect) {
-                    return;
-                }
+                if (!fileSelect) return;
                 const option = Array.from(fileSelect.options).find((opt) => opt.value === String(fileId));
-                if (option) {
-                    option.remove();
-                }
+                if (option) option.remove();
             }
 
             function attachFileActions(row) {
-                if (!row) {
-                    return;
-                }
-
+                if (!row) return;
                 const pickButton = row.querySelector('[data-file-pick]');
                 if (pickButton) {
                     pickButton.addEventListener('click', () => {
                         const id = pickButton.dataset.fileId;
-                        if (!id) {
-                            return;
-                        }
+                        if (!id) return;
                         selectFileOption(id);
-                        if (fileModal) {
-                            fileModal.hide();
-                        }
+                        if (fileModal) fileModal.hide();
                     });
                 }
-
                 const deleteButton = row.querySelector('[data-file-delete]');
                 if (deleteButton) {
                     deleteButton.addEventListener('click', () => {
                         const fileId = deleteButton.dataset.fileId;
-                        if (!fileId) {
-                            return;
-                        }
+                        if (!fileId) return;
                         handleFileDelete(fileId, deleteButton);
                     });
                 }
@@ -486,10 +527,8 @@
                     showErrorMessage('Token CSRF tidak ditemukan. Muat ulang halaman.');
                     return;
                 }
-
                 const fileName = triggerButton?.dataset?.fileName ?? 'file ini';
                 let confirmed = true;
-
                 if (typeof Swal !== 'undefined') {
                     const result = await Swal.fire({
                         title: 'Hapus gambar?',
@@ -505,15 +544,10 @@
                 } else if (!window.confirm(`Hapus ${fileName}?`)) {
                     confirmed = false;
                 }
-
-                if (!confirmed) {
-                    return;
-                }
-
+                if (!confirmed) return;
                 const originalHtml = triggerButton.innerHTML;
                 triggerButton.disabled = true;
                 triggerButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
                 try {
                     const response = await fetch(deleteRouteTemplate.replace('__ID__', fileId), {
                         method: 'DELETE',
@@ -523,37 +557,21 @@
                             'Accept': 'application/json'
                         }
                     });
-
                     let data = {};
                     try {
                         data = await response.json();
-                    } catch (parseError) {
-                        console.error('Failed to parse delete response', parseError);
-                    }
-
-                    if (!response.ok || !data.success) {
-                        throw new Error(data.message || 'Gagal menghapus file.');
-                    }
-
+                    } catch (e) {}
+                    if (!response.ok || !data.success) throw new Error(data.message || 'Gagal menghapus file.');
                     const row = triggerButton.closest('[data-file-row]');
-                    if (row) {
-                        row.remove();
-                    }
-
+                    if (row) row.remove();
                     removeFileOption(fileId);
-
                     if (fileSelect && fileSelect.value === String(fileId)) {
                         fileSelect.value = '';
                         fileSelect.dispatchEvent(new Event('change'));
                     }
-
                     const tbody = document.getElementById('filesTableBody');
-                    if (!tbody || !tbody.children.length) {
-                        renderEmptyFilesState();
-                    }
-
+                    if (!tbody || !tbody.children.length) renderEmptyFilesState();
                     showSuccessMessage('Gambar berhasil dihapus.');
-
                     if (typeof Swal !== 'undefined') {
                         await Swal.fire({
                             title: 'Terhapus',
@@ -564,15 +582,12 @@
                         });
                     }
                 } catch (error) {
-                    console.error('Delete error:', error);
                     showErrorMessage(error.message || 'Gagal menghapus file.');
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            title: 'Gagal',
-                            text: error.message || 'Gagal menghapus file.',
-                            icon: 'error'
-                        });
-                    }
+                    if (typeof Swal !== 'undefined') Swal.fire({
+                        title: 'Gagal',
+                        text: error.message,
+                        icon: 'error'
+                    });
                 } finally {
                     triggerButton.disabled = false;
                     triggerButton.innerHTML = originalHtml;
@@ -582,9 +597,7 @@
             function formatDisplayDate(value) {
                 if (!value) return '-';
                 const date = new Date(value);
-                if (Number.isNaN(date.getTime())) {
-                    return '-';
-                }
+                if (isNaN(date.getTime())) return '-';
                 return date.toLocaleDateString('id-ID', {
                     day: '2-digit',
                     month: 'short',
@@ -594,103 +607,69 @@
 
             function highlightSelectedRow() {
                 const selectedId = peminjamanSelect?.value ?? '';
-                peminjamanRows.forEach((row) => {
-                    if (row.dataset.peminjamanRow === selectedId) {
-                        row.classList.add('table-active');
-                    } else {
-                        row.classList.remove('table-active');
-                    }
+                peminjamanRows.forEach(row => {
+                    if (row.dataset.peminjamanRow === selectedId) row.classList.add('table-active');
+                    else row.classList.remove('table-active');
                 });
             }
 
             function updateSummary() {
                 const option = peminjamanSelect?.selectedOptions?.[0];
                 if (!option || !option.value) {
-                    Object.values(summaryFields).forEach((node) => node && (node.textContent = '-'));
+                    Object.values(summaryFields).forEach(node => node && (node.textContent = '-'));
                     if (summaryStatus) {
                         summaryStatus.textContent = 'Belum dipilih';
                         summaryStatus.className = 'badge text-bg-secondary';
                     }
                     if (selectedAlert) {
-                        selectedAlert.classList.add('text-danger');
-                        selectedAlert.textContent = 'Peminjaman belum dipilih. Klik salah satu baris terlebih dahulu.';
+                        selectedAlert.classList.remove('text-danger');
+                        selectedAlert.textContent = 'Klik baris peminjaman untuk memilihnya.';
                     }
                     return;
                 }
-
                 summaryFields.peminjam && (summaryFields.peminjam.textContent = option.dataset.peminjam ?? '-');
                 summaryFields.alat && (summaryFields.alat.textContent = option.dataset.alat ?? '-');
                 summaryFields.pinjam && (summaryFields.pinjam.textContent = formatDisplayDate(option.dataset.pinjamDate));
                 const overdueNow = option.dataset.overdue === 'true';
                 let kembaliText = formatDisplayDate(option.dataset.dueDate);
-                if (overdueNow && kembaliText !== '-') {
-                    kembaliText += ' (Telat)';
-                }
+                if (overdueNow && kembaliText !== '-') kembaliText += ' (Telat)';
                 summaryFields.kembali && (summaryFields.kembali.textContent = kembaliText);
-
                 if (summaryStatus) {
                     summaryStatus.textContent = option.dataset.statusLabel ?? 'Peminjaman';
                     summaryStatus.className = 'badge ' + (option.dataset.statusClass ?? 'text-bg-secondary');
                 }
-
                 if (selectedAlert) {
                     selectedAlert.classList.remove('text-danger');
-                    selectedAlert.textContent = 'Peminjaman sudah dipilih. Anda bisa menggantinya kapan saja.';
+                    selectedAlert.textContent = 'Peminjaman sudah dipilih. Lengkapi data pengembalian.';
                 }
             }
 
-            function updatePenaltyState() {
+            function hitungDendaTelat() {
                 const option = peminjamanSelect?.selectedOptions?.[0];
-                const dueValue = option?.dataset?.dueDate ?? '';
-                const actualValue = tanggalPengembalianInput?.value ?? '';
-                if (!dueValue || !actualValue) {
-                    if (dendaInput) {
-                        dendaInput.required = false;
-                    }
-                    if (dendaMessage) {
-                        dendaMessage.textContent = 'Isi jika ada kerusakan, kehilangan, atau keterlambatan.';
-                        dendaMessage.classList.remove('text-danger');
-                        dendaMessage.classList.add('text-muted');
-                    }
-                    if (dendaBadge) {
-                        dendaBadge.textContent = 'Opsional';
-                        dendaBadge.classList.remove('text-bg-danger');
-                        dendaBadge.classList.add('text-bg-secondary');
-                    }
-                    return;
-                }
+                const dueDateStr = option?.dataset?.dueDate ?? '';
+                const actualDateStr = tanggalPengembalianInput?.value ?? '';
+                if (!dueDateStr || !actualDateStr) return 0;
+                const dueDate = new Date(dueDateStr);
+                const actualDate = new Date(actualDateStr);
+                if (isNaN(dueDate) || isNaN(actualDate)) return 0;
+                if (actualDate <= dueDate) return 0;
+                const diffDays = Math.ceil((actualDate - dueDate) / (1000 * 60 * 60 * 24));
+                return diffDays > 0 ? diffDays * 2000 : 0;
+            }
 
-                const dueDate = new Date(dueValue);
-                const actualDate = new Date(actualValue);
-                const isLate = !Number.isNaN(dueDate.getTime()) && !Number.isNaN(actualDate.getTime()) && actualDate.getTime() > dueDate.getTime();
-
-                if (isLate) {
-                    if (dendaInput) {
-                        dendaInput.required = true;
-                    }
-                    if (dendaMessage) {
-                        dendaMessage.textContent = 'Tanggal pengembalian melewati batas, wajib isi nominal denda.';
-                        dendaMessage.classList.remove('text-muted');
-                        dendaMessage.classList.add('text-danger');
-                    }
-                    if (dendaBadge) {
-                        dendaBadge.textContent = 'Wajib karena telat';
-                        dendaBadge.classList.remove('text-bg-secondary');
-                        dendaBadge.classList.add('text-bg-danger');
-                    }
-                } else {
-                    if (dendaInput) {
-                        dendaInput.required = false;
-                    }
-                    if (dendaMessage) {
-                        dendaMessage.textContent = 'Isi jika ada kerusakan, kehilangan, atau keterlambatan.';
-                        dendaMessage.classList.remove('text-danger');
-                        dendaMessage.classList.add('text-muted');
-                    }
-                    if (dendaBadge) {
-                        dendaBadge.textContent = 'Opsional';
-                        dendaBadge.classList.remove('text-bg-danger');
-                        dendaBadge.classList.add('text-bg-secondary');
+            function updateEstimasiTotalDenda() {
+                const dendaTelat = hitungDendaTelat();
+                const dendaKondisi = parseFloat(dendaKondisiInput?.value) || 0;
+                const total = dendaTelat + dendaKondisi;
+                if (estimasiTotalDendaSpan) estimasiTotalDendaSpan.value = total.toLocaleString('id-ID');
+                if (infoDendaTelatSpan) {
+                    if (dendaTelat > 0) {
+                        const hariTelat = dendaTelat / 2000;
+                        infoDendaTelatSpan.innerHTML = `⚠️ Denda telat: Rp ${dendaTelat.toLocaleString('id-ID')} (${hariTelat} hari × Rp2.000)`;
+                        infoDendaTelatSpan.classList.add('text-danger');
+                    } else {
+                        infoDendaTelatSpan.innerHTML = `Denda telat dihitung otomatis @ Rp2.000/hari.`;
+                        infoDendaTelatSpan.classList.remove('text-danger');
                     }
                 }
             }
@@ -698,15 +677,10 @@
             function updateFilePreview() {
                 const option = fileSelect?.selectedOptions?.[0];
                 if (!option || !option.value) {
-                    if (filePreviewTarget) {
-                        filePreviewTarget.innerHTML = '<span class="text-muted">Belum ada gambar dipilih</span>';
-                    }
-                    if (fileNameTarget) {
-                        fileNameTarget.textContent = 'Belum ada gambar dipilih';
-                    }
+                    if (filePreviewTarget) filePreviewTarget.innerHTML = '<span class="text-muted">Belum ada gambar dipilih</span>';
+                    if (fileNameTarget) fileNameTarget.textContent = 'Belum ada gambar dipilih';
                     return;
                 }
-
                 if (filePreviewTarget) {
                     const img = document.createElement('img');
                     img.src = option.dataset.preview ?? '';
@@ -714,149 +688,89 @@
                     filePreviewTarget.innerHTML = '';
                     filePreviewTarget.appendChild(img);
                 }
-
-                if (fileNameTarget) {
-                    fileNameTarget.textContent = option.dataset.name ?? 'File terpilih';
-                }
+                if (fileNameTarget) fileNameTarget.textContent = option.dataset.name ?? 'File terpilih';
             }
 
             function selectPeminjaman(id) {
-                if (!peminjamanSelect) {
-                    return;
-                }
+                if (!peminjamanSelect) return;
                 peminjamanSelect.value = id;
                 peminjamanSelect.dispatchEvent(new Event('change'));
             }
 
             function selectFileOption(id) {
-                if (!fileSelect) {
-                    console.error('fileSelect element not found');
-                    return;
-                }
+                if (!fileSelect) return;
                 fileSelect.value = id;
                 fileSelect.dispatchEvent(new Event('change'));
             }
 
             function addFileToTable(file) {
                 const emptyState = document.getElementById('emptyState');
-                if (emptyState) {
-                    emptyState.remove();
-                }
-
+                if (emptyState) emptyState.remove();
                 let tbody = document.getElementById('filesTableBody');
-
                 if (!tbody) {
                     const container = document.getElementById('filesContainer');
                     if (container) {
                         container.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table align-middle" id="filesTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 80px;">Preview</th>
-                                    <th>Nama File</th>
-                                    <th class="text-end">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="filesTableBody"></tbody>
-                        </table>
-                    </div>
-                `;
+                            <div class="table-responsive">
+                                <table class="table align-middle" id="filesTable">
+                                    <thead class="table-light">
+                                        <tr><th style="width:80px">Preview</th><th>Nama File</th><th class="text-end">Aksi</th></tr>
+                                    </thead>
+                                    <tbody id="filesTableBody"></tbody>
+                                </table>
+                            </div>
+                        `;
                         tbody = document.getElementById('filesTableBody');
                     }
                 }
-
-                if (!tbody) {
-                    console.error('Could not create or find table body');
-                    return;
-                }
-
+                if (!tbody) return;
                 const row = document.createElement('tr');
                 row.dataset.fileRow = String(file.id);
                 const previewPath = file.path || file.file_path;
                 const fileName = file.nama_file || file.file_name || 'Tanpa nama';
-
                 row.innerHTML = `
-            <td>
-                <div class="rounded overflow-hidden border" data-preview-box style="width: 64px; height: 64px; cursor: zoom-in;">
-                    <img src="${previewPath}" alt="${fileName}" class="w-100 h-100 object-fit-cover">
-                </div>
-            </td>
-            <td>
-                <div class="fw-semibold">${fileName}</div>
-                <div class="text-muted small">ID: ${file.id}</div>
-            </td>
-            <td class="text-end">
-                <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-preview-trigger>
-                        Lihat
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="${file.id}">
-                        Gunakan
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" data-file-delete data-file-id="${file.id}">
-                        Hapus
-                    </button>
-                </div>
-            </td>
-        `;
-
+                    <td><div class="rounded overflow-hidden border" data-preview-box style="width:64px;height:64px;cursor:zoom-in;"><img src="${previewPath}" alt="${fileName}" class="w-100 h-100 object-fit-cover"></div></td>
+                    <td><div class="fw-semibold">${fileName}</div><div class="text-muted small">ID: ${file.id}</div></td>
+                    <td class="text-end"><div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-preview-trigger>Lihat</button><button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="${file.id}">Gunakan</button><button type="button" class="btn btn-sm btn-outline-danger" data-file-delete data-file-id="${file.id}">Hapus</button></div></td>
+                `;
                 tbody.insertBefore(row, tbody.firstChild);
-
                 const previewBox = row.querySelector('[data-preview-box]');
                 if (previewBox) {
                     previewBox.setAttribute('data-file-preview', '');
                     previewBox.setAttribute('data-file-url', previewPath);
                     previewBox.setAttribute('data-file-name', fileName);
                 }
-
                 const previewTrigger = row.querySelector('[data-preview-trigger]');
                 if (previewTrigger) {
                     previewTrigger.setAttribute('data-file-preview', '');
                     previewTrigger.setAttribute('data-file-url', previewPath);
                     previewTrigger.setAttribute('data-file-name', fileName);
                 }
-
                 const deleteButton = row.querySelector('[data-file-delete]');
-                if (deleteButton) {
-                    deleteButton.dataset.fileName = fileName;
-                }
-
+                if (deleteButton) deleteButton.dataset.fileName = fileName;
                 attachFileActions(row);
             }
 
             function addFileToSelect(file) {
-                if (!fileSelect) {
-                    console.error('fileSelect element not found');
-                    return;
-                }
-
+                if (!fileSelect) return;
                 const option = document.createElement('option');
                 const previewPath = file.path || file.file_path;
                 const fileName = file.nama_file || file.file_name || 'Tanpa nama';
-
                 option.value = file.id;
                 option.dataset.preview = previewPath;
                 option.dataset.name = fileName;
                 option.textContent = fileName;
-
-                if (fileSelect.options.length > 1) {
-                    fileSelect.insertBefore(option, fileSelect.options[1]);
-                } else {
-                    fileSelect.appendChild(option);
-                }
+                if (fileSelect.options.length > 1) fileSelect.insertBefore(option, fileSelect.options[1]);
+                else fileSelect.appendChild(option);
             }
 
             if (uploadForm) {
                 uploadForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-
                     const formData = new FormData(uploadForm);
                     uploadButton.disabled = true;
                     uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
-
                     hideFileAlerts();
-
                     try {
                         const response = await fetch('{{ route('filemanager.upload') }}', {
                             method: 'POST',
@@ -866,24 +780,18 @@
                                 'Accept': 'application/json'
                             }
                         });
-
                         const data = await response.json();
-
                         if (response.ok && data.success) {
                             showSuccessMessage('Gambar berhasil diupload!');
                             uploadForm.reset();
-
                             if (data.file) {
                                 addFileToTable(data.file);
                                 addFileToSelect(data.file);
                                 selectFileOption(data.file.id);
                             }
-                        } else {
-                            throw new Error(data.message || 'Upload gagal');
-                        }
+                        } else throw new Error(data.message || 'Upload gagal');
                     } catch (error) {
                         showErrorMessage(error.message || 'Gagal mengupload file.');
-                        console.error('Upload error:', error);
                     } finally {
                         uploadButton.disabled = false;
                         uploadButton.innerHTML = '<i class="bi bi-cloud-upload me-2"></i>Upload';
@@ -895,68 +803,54 @@
                 peminjamanSelect.addEventListener('change', () => {
                     highlightSelectedRow();
                     updateSummary();
-                    updatePenaltyState();
+                    updateEstimasiTotalDenda();
                 });
             }
-
-            peminjamanRows.forEach((row) => {
+            peminjamanRows.forEach(row => {
                 row.addEventListener('click', (event) => {
-                    if (event.target.closest('button')) {
-                        return;
-                    }
+                    if (event.target.closest('button')) return;
                     selectPeminjaman(row.dataset.peminjamanRow);
                 });
             });
-
-            document.querySelectorAll('[data-peminjaman-trigger]').forEach((button) => {
+            document.querySelectorAll('[data-peminjaman-trigger]').forEach(button => {
                 button.addEventListener('click', (event) => {
                     event.stopPropagation();
                     selectPeminjaman(button.dataset.peminjamanTrigger);
                 });
             });
-
             if (searchInput) {
                 searchInput.addEventListener('input', (event) => {
                     const keyword = event.target.value.toLowerCase();
-                    peminjamanRows.forEach((row) => {
+                    peminjamanRows.forEach(row => {
                         const text = row.textContent?.toLowerCase() ?? '';
                         row.style.display = text.includes(keyword) ? '' : 'none';
                     });
                 });
             }
-
             if (tanggalPengembalianInput) {
-                if (!allowPastDate) {
+                const allowPast = tanggalPengembalianInput.dataset.allowPast === 'true';
+                if (!allowPast) {
                     tanggalPengembalianInput.min = todayValue;
-                    if (tanggalPengembalianInput.value && tanggalPengembalianInput.value < todayValue) {
-                        tanggalPengembalianInput.value = todayValue;
-                    }
+                    if (tanggalPengembalianInput.value && tanggalPengembalianInput.value < todayValue) tanggalPengembalianInput.value = todayValue;
                 }
                 tanggalPengembalianInput.addEventListener('change', () => {
-                    if (!allowPastDate && tanggalPengembalianInput.value && tanggalPengembalianInput.value < todayValue) {
-                        tanggalPengembalianInput.value = todayValue;
-                    }
-                    updatePenaltyState();
+                    if (!allowPast && tanggalPengembalianInput.value && tanggalPengembalianInput.value < todayValue) tanggalPengembalianInput.value = todayValue;
+                    updateEstimasiTotalDenda();
                 });
             }
-
-            if (fileSelect) {
-                fileSelect.addEventListener('change', updateFilePreview);
+            if (dendaKondisiInput) {
+                dendaKondisiInput.addEventListener('input', updateEstimasiTotalDenda);
             }
-
-            document.querySelectorAll('[data-open-file-modal]').forEach((button) => {
+            if (fileSelect) fileSelect.addEventListener('change', updateFilePreview);
+            document.querySelectorAll('[data-open-file-modal]').forEach(button => {
                 button.addEventListener('click', () => {
-                    if (fileModal) {
-                        fileModal.show();
-                    }
+                    if (fileModal) fileModal.show();
                 });
             });
-
-            document.querySelectorAll('[data-file-row]').forEach((row) => attachFileActions(row));
-
+            document.querySelectorAll('[data-file-row]').forEach(row => attachFileActions(row));
             highlightSelectedRow();
             updateSummary();
-            updatePenaltyState();
+            updateEstimasiTotalDenda();
             updateFilePreview();
         });
     </script>
