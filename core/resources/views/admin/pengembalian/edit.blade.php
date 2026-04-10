@@ -306,7 +306,7 @@
                         <!-- Tampilkan gambar QRIS jika metode = QRIS -->
                         <div class="col-12" id="qrisContainer" style="display: none;">
                             <div class="alert alert-info text-center p-3">
-                                <img src="{{ asset('uploads/qris.jpg') }}" alt="QRIS Code" style="max-width: 200px;" class="img-fluid rounded">
+                                <img src="{{ asset('storage/uploads/qris.jpg') }}" alt="QRIS Code" style="max-width: 200px;" class="img-fluid rounded">
                                 <p class="mt-2 mb-0">Scan QRIS untuk melakukan pembayaran</p>
                             </div>
                         </div>
