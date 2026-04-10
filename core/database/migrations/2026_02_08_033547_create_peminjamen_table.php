@@ -23,7 +23,9 @@ return new class extends Migration
                     ->restrictOnDelete();
             $table->date('tanggal_pinjam');
             $table->date('tanggal_kembali')->nullable();
-            $table->enum('status', ['ditolak', 'pending', 'dipinjam', 'dikembalikan'])->default('pending');
+            $table->integer('total_alat');
+            $table->enum('status', ['rejected', 'pending', 'approve', 'returned'])->default('pending');
+            $table->text('alasan_ditolak')->nullable();
             $table->timestamps();
         });
     }

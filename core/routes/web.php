@@ -92,12 +92,6 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::delete('{pengembalian}', 'destroy')->name('pengembalian.destroy');
         });
 
-        Route::controller(FileManagerController::class)->prefix('file-manager')->group(function () {
-            Route::get('/', 'listImages')->name('filemanager.list');
-            Route::post('upload', 'uploadImage')->name('filemanager.upload');
-            Route::delete('{id}', 'deleteImage')->name('filemanager.delete');
-        });
-
         Route::controller(LogAktivitasController::class)->prefix('log-aktivitas')->group(function () {
             Route::get('/', 'index')->name('admin.log.index');
         });
@@ -141,5 +135,11 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::get('/', 'listPengembalian')->name('peminjam.pengembalian.list');
             Route::get('{pengembalian}', 'show')->name('peminjam.pengembalian.show');
         });
+    });
+
+    Route::controller(FileManagerController::class)->prefix('file-manager')->group(function () {
+        Route::get('/', 'listImages')->name('filemanager.list');
+        Route::post('upload', 'uploadImage')->name('filemanager.upload');
+        Route::delete('{id}', 'deleteImage')->name('filemanager.delete');
     });
 });

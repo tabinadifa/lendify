@@ -14,7 +14,9 @@ class Pengembalian extends Model
         'peminjaman_id',
         'tanggal_pengembalian',
         'kondisi_alat',
+        'status',
         'denda',
+        'metode_pembayaran',
         'file_bukti_pengembalian_id',
         'catatan',
     ];

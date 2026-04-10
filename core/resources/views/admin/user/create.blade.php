@@ -44,13 +44,19 @@
                     <option value="" disabled selected>Pilih role</option>
                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
-                    <option value="peminjam" {{ old('role') == 'peminjam' ? 'selected' : '' }}></option>
+                    <option value="peminjam" {{ old('role') == 'peminjam' ? 'selected' : '' }}>Peminjam</option>
                 </select>
             </div>
 
+            {{-- FIELD PASSWORD DENGAN IKON MATA --}}
             <div class="col-md-6">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" class="form-control" required>
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                        <i class="bi bi-eye-slash"></i>   {{-- Ikon mata tertutup --}}
+                    </button>
+                </div>
                 <small class="text-muted">Minimal 8 karakter.</small>
             </div>
 
@@ -61,4 +67,21 @@
         </form>
     </div>
 </div>
+
+{{-- SCRIPT UNTUK TOGGLE PASSWORD --}}
+<script>
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    toggleBtn.addEventListener('click', function() {
+        // Toggle tipe input
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // Toggle ikon mata
+        const icon = this.querySelector('i');
+        icon.classList.toggle('bi-eye');
+        icon.classList.toggle('bi-eye-slash');
+    });
+</script>
 @endsection

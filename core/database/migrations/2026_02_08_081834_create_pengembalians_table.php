@@ -18,7 +18,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->date('tanggal_pengembalian');
-            $table->text('kondisi_alat');
+            $table->enum('kondisi_alat', ['baik', 'rusak_ringan', 'rusak_berat', 'hilang'])->default('baik');
             $table->integer('denda')->default(0);
             $table->foreignId('file_bukti_pengembalian_id')
                 ->nullable()

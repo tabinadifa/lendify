@@ -58,6 +58,7 @@
                             <th>Tgl Pengembalian</th>
                             <th>Kondisi</th>
                             <th>Denda</th>
+                            <th>Status</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -101,6 +102,8 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
+
+                                <td>{{ $item->status }}</td>
 
                                 <td class="text-center">
                                     <div class="d-inline-flex gap-2">

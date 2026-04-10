@@ -35,7 +35,9 @@ class PengembalianController extends Controller
             'peminjaman_id',
             'tanggal_pengembalian',
             'kondisi_alat',
+            'status',
             'denda',
+            'metode_pembayaran',
             'file_bukti_pengembalian_id',
             'created_at'
         );
@@ -115,8 +117,10 @@ class PengembalianController extends Controller
         $validated = $request->validate([
             'peminjaman_id' => ['required', 'exists:peminjaman,id'],
             'tanggal_pengembalian' => ['required', 'date'],
-            'kondisi_alat' => ['required', 'string', 'max:255'],
-            'denda' => ['nullable', 'numeric', 'min:0'],
+            'kondisi_alat' => ['required', 'in:baik,rusak_ringan,rusak_berat,hilang'],
+            'denda_kondisi' => ['nullable', 'numeric', 'min:0'], // denda dari kondisi alat
+            'status' => ['required', 'in:pending,lunas,belum_lunas'], // sesuaikan opsi sesuai kebutuhan
+            'metode_pembayaran' => ['nullable', 'string', 'max:50'],
             'file_bukti_pengembalian_id' => ['nullable', 'exists:file_managers,id'],
             'catatan' => ['nullable', 'string'],
         ]);
@@ -145,13 +149,21 @@ class PengembalianController extends Controller
                 ]);
             }
 
-            $dendaValue = $this->resolveDendaValue($validated, $peminjaman);
+            // Hitung total denda (telat otomatis + kondisi)
+            $dendaTelat = $this->hitungDendaTelat(
+                $validated['tanggal_pengembalian'],
+                $peminjaman->tanggal_kembali
+            );
+            $dendaKondisi = (float) ($validated['denda_kondisi'] ?? 0);
+            $totalDenda = $dendaTelat + $dendaKondisi;
 
             Pengembalian::create([
                 'peminjaman_id' => $validated['peminjaman_id'],
                 'tanggal_pengembalian' => $validated['tanggal_pengembalian'],
                 'kondisi_alat' => $validated['kondisi_alat'],
-                'denda' => $dendaValue,
+                'status' => $validated['status'],
+                'denda' => $totalDenda,
+                'metode_pembayaran' => $validated['metode_pembayaran'] ?? null,
                 'file_bukti_pengembalian_id' => $validated['file_bukti_pengembalian_id'] ?? null,
                 'catatan' => $validated['catatan'] ?? null,
             ]);
@@ -241,8 +253,10 @@ class PengembalianController extends Controller
         $validated = $request->validate([
             'peminjaman_id' => ['required', 'exists:peminjaman,id'],
             'tanggal_pengembalian' => ['required', 'date'],
-            'kondisi_alat' => ['required', 'string', 'max:255'],
-            'denda' => ['nullable', 'numeric', 'min:0'],
+            'kondisi_alat' => ['required', 'in:baik,rusak_ringan,rusak_berat,hilang'],
+            'denda_kondisi' => ['nullable', 'numeric', 'min:0'],
+            'status' => ['required', 'in:pending,lunas,belum_lunas'],
+            'metode_pembayaran' => ['nullable', 'string', 'max:50'],
             'file_bukti_pengembalian_id' => ['nullable', 'exists:file_managers,id'],
             'catatan' => ['nullable', 'string'],
         ]);
@@ -256,13 +270,21 @@ class PengembalianController extends Controller
             ]);
         }
 
-        $dendaValue = $this->resolveDendaValue($validated, $peminjaman);
+        // Hitung ulang denda telat berdasarkan peminjaman yang dipilih
+        $dendaTelat = $this->hitungDendaTelat(
+            $validated['tanggal_pengembalian'],
+            $peminjaman->tanggal_kembali
+        );
+        $dendaKondisi = (float) ($validated['denda_kondisi'] ?? 0);
+        $totalDenda = $dendaTelat + $dendaKondisi;
 
         $pengembalian->update([
             'peminjaman_id' => $validated['peminjaman_id'],
             'tanggal_pengembalian' => $validated['tanggal_pengembalian'],
             'kondisi_alat' => $validated['kondisi_alat'],
-            'denda' => $dendaValue,
+            'status' => $validated['status'],
+            'denda' => $totalDenda,
+            'metode_pembayaran' => $validated['metode_pembayaran'] ?? null,
             'file_bukti_pengembalian_id' => $validated['file_bukti_pengembalian_id'] ?? null,
             'catatan' => $validated['catatan'] ?? null,
         ]);
@@ -289,18 +311,28 @@ class PengembalianController extends Controller
             ->with('success', 'Data pengembalian berhasil dihapus.');
     }
 
-    private function resolveDendaValue(array $validated, Peminjaman $peminjaman): float
+    /**
+     * Hitung denda keterlambatan.
+     * Denda per hari = Rp2.000.
+     *
+     * @param string $tanggalPengembalian
+     * @param string|null $tanggalKembali
+     * @return float
+     */
+    private function hitungDendaTelat(string $tanggalPengembalian, ?string $tanggalKembali): float
     {
-        $isLate = $peminjaman->tanggal_kembali
-            && Carbon::parse($validated['tanggal_pengembalian'])
-            ->gt(Carbon::parse($peminjaman->tanggal_kembali));
-
-        if ($isLate && ((float) ($validated['denda'] ?? 0) <= 0)) {
-            throw ValidationException::withMessages([
-                'denda' => 'Denda wajib diisi karena pengembalian melewati tanggal kembali.',
-            ]);
+        if (!$tanggalKembali) {
+            return 0.0;
         }
 
-        return (float) ($validated['denda'] ?? 0);
+        $tglKembali = Carbon::parse($tanggalKembali)->startOfDay();
+        $tglPengembalian = Carbon::parse($tanggalPengembalian)->startOfDay();
+
+        if ($tglPengembalian->lte($tglKembali)) {
+            return 0.0;
+        }
+
+        $hariTelat = $tglKembali->diffInDays($tglPengembalian);
+        return $hariTelat * 2000;
     }
 }
