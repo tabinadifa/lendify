@@ -19,7 +19,7 @@ class AlatController extends Controller
         }
 
         $query = Alat::with('kategori', 'gambarAlat')
-            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'created_at', 'gambar_alat_id');
+            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'baik', 'rusak_ringan', 'diperbaiki', 'created_at', 'gambar_alat_id');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -54,7 +54,7 @@ class AlatController extends Controller
         return view('admin.alat.create', [
             'kategoriAlats' => $kategoriAlats,
             'files' => FileManager::select('id', 'file_name', 'file_path', 'created_at')
-                ->where('file_path', 'like', '%gambar-alat%')
+                ->where('file_path', 'like', '%/uploads/gambar-alat/%')
                 ->orderByDesc('created_at')
                 ->get(),
         ]);
@@ -65,15 +65,16 @@ class AlatController extends Controller
         try {
             $validated = $request->validate([
                 'kategori_id'    => ['required', 'exists:kategori_alat,id'],
-                'nama_alat'      => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
+                'nama_alat'      => ['required', 'string', 'max:255'], // regex dihapus
                 'deskripsi'      => ['nullable', 'string'],
-                'jumlah_stok'    => ['required', 'integer', 'min:0'],
                 'gambar_alat_id' => ['nullable', 'exists:file_managers,id'],
-            ], [
-                'nama_alat.regex' => 'Nama alat hanya boleh berisi huruf dan spasi.',
+                'baik'           => ['required', 'integer', 'min:0'],
+                'rusak_ringan'   => ['required', 'integer', 'min:0'],
+                'diperbaiki'     => ['required', 'integer', 'min:0'],
             ]);
 
             $validated['nama_alat'] = ucwords(strtolower($validated['nama_alat']));
+            $validated['jumlah_stok'] = $validated['baik'] + $validated['rusak_ringan'] + $validated['diperbaiki'];
 
             Alat::create($validated);
 
@@ -100,7 +101,7 @@ class AlatController extends Controller
             'alat'          => $alat,
             'kategoriAlats' => $kategoriAlats,
             'files'         => FileManager::select('id', 'file_name', 'file_path', 'created_at')
-                ->where('file_path', 'like', '%gambar-alat%')
+                ->where('file_path', 'like', '%/uploads/gambar-alat/%')
                 ->orderByDesc('created_at')
                 ->get(),
         ]);
@@ -111,15 +112,16 @@ class AlatController extends Controller
         try {
             $validated = $request->validate([
                 'kategori_id'    => ['required', 'exists:kategori_alat,id'],
-                'nama_alat'      => ['required', 'string', 'max:255', 'regex:/^[A-Za-z\s]+$/'],
+                'nama_alat'      => ['required', 'string', 'max:255'], // regex dihapus
                 'deskripsi'      => ['nullable', 'string'],
-                'jumlah_stok'    => ['required', 'integer', 'min:0'],
                 'gambar_alat_id' => ['nullable', 'exists:file_managers,id'],
-            ], [
-                'nama_alat.regex' => 'Nama alat hanya boleh berisi huruf dan spasi.',
+                'baik'           => ['required', 'integer', 'min:0'],
+                'rusak_ringan'   => ['required', 'integer', 'min:0'],
+                'diperbaiki'     => ['required', 'integer', 'min:0'],
             ]);
 
             $validated['nama_alat'] = ucwords(strtolower($validated['nama_alat']));
+            $validated['jumlah_stok'] = $validated['baik'] + $validated['rusak_ringan'] + $validated['diperbaiki'];
 
             $alat->update($validated);
 

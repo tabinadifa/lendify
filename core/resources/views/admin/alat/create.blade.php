@@ -38,37 +38,44 @@
 
             <div class="col-md-6">
                 <label for="nama_alat" class="form-label">Nama Alat</label>
-                <input
-                    type="text"
-                    id="nama_alat"
-                    name="nama_alat"
-                    class="form-control"
-                    value="{{ old('nama_alat') }}"
-                    required
-                >
+                <input type="text" id="nama_alat" name="nama_alat" class="form-control"
+                    value="{{ old('nama_alat') }}" required>
             </div>
 
-            <div class="col-md-6">
-                <label for="jumlah_stok" class="form-label">Jumlah Stok</label>
-                <input
-                    type="number"
-                    id="jumlah_stok"
-                    name="jumlah_stok"
-                    class="form-control"
-                    min="0"
-                    value="{{ old('jumlah_stok') }}"
-                    required
-                >
-            </div>
-
-            <div class="col-md-6">
+            {{-- DESKRIPSI --}}
+            <div class="col-12">
                 <label for="deskripsi" class="form-label">Deskripsi</label>
-                <textarea
-                    name="deskripsi"
-                    id="deskripsi"
-                    rows="3"
-                    class="form-control"
-                >{{ old('deskripsi') }}</textarea>
+                <textarea name="deskripsi" id="deskripsi" rows="3" class="form-control">{{ old('deskripsi') }}</textarea>
+            </div>
+
+            {{-- KONDISI ALAT --}}
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Kondisi Alat</label>
+                <div class="row g-2">
+                    <div class="col">
+                        <label for="baik" class="form-label small">Baik</label>
+                        <input type="number" id="baik" name="baik" class="form-control" min="0"
+                            value="{{ old('baik', 0) }}" required>
+                    </div>
+                    <div class="col">
+                        <label for="rusak_ringan" class="form-label small">Rusak Ringan</label>
+                        <input type="number" id="rusak_ringan" name="rusak_ringan" class="form-control" min="0"
+                            value="{{ old('rusak_ringan', 0) }}" required>
+                    </div>
+                    <div class="col">
+                        <label for="diperbaiki" class="form-label small">Diperbaiki</label>
+                        <input type="number" id="diperbaiki" name="diperbaiki" class="form-control" min="0"
+                            value="{{ old('diperbaiki', 0) }}" required>
+                    </div>
+                </div>
+            </div>
+
+            {{-- JUMLAH STOK (TOTAL) --}}
+            <div class="col-md-6">
+                <label for="jumlah_stok" class="form-label">Jumlah Stok (Total)</label>
+                <input type="number" id="jumlah_stok" name="jumlah_stok" class="form-control" readonly
+                    value="{{ old('jumlah_stok', 0) }}">
+                <small class="text-muted">Dihitung otomatis dari kondisi di atas.</small>
             </div>
 
             {{-- ===== FOTO ALAT ===== --}}
@@ -76,31 +83,24 @@
                 <hr class="my-1">
                 <label class="form-label fw-semibold">Foto Alat</label>
 
-                {{-- Hidden select untuk menyimpan file_id yang dipilih --}}
                 <select name="gambar_alat_id" id="gambar_alat_id" class="form-select d-none" aria-hidden="true">
                     <option value="" {{ old('gambar_alat_id') ? '' : 'selected' }}>Pilih file</option>
                     @foreach ($files as $file)
                         @php
                             $previewPath = asset($file->path ?? $file->file_path);
-                            $fileName    = $file->nama_file ?? $file->file_name ?? 'Tanpa nama';
+                            $fileName    = $file->file_name ?? $file->nama_file ?? 'Tanpa nama';
                         @endphp
-                        <option
-                            value="{{ $file->id }}"
-                            data-preview="{{ $previewPath }}"
-                            data-name="{{ $fileName }}"
-                            {{ (string) old('gambar_alat_id') === (string) $file->id ? 'selected' : '' }}
-                        >
+                        <option value="{{ $file->id }}" data-preview="{{ $previewPath }}" data-name="{{ $fileName }}"
+                            {{ (string) old('gambar_alat_id') === (string) $file->id ? 'selected' : '' }}>
                             {{ $fileName }}
                         </option>
                     @endforeach
                 </select>
 
                 <div class="d-flex align-items-start gap-4 flex-wrap mt-1">
-                    {{-- Thumbnail preview --}}
                     <div class="alat-file-preview" id="alatFilePreview">
                         <span class="text-muted small">Belum ada gambar dipilih</span>
                     </div>
-
                     <div class="d-flex flex-column gap-2 justify-content-center">
                         <p class="small text-muted mb-1" id="alatFileName">Belum ada gambar dipilih</p>
                         <button type="button" class="btn btn-outline-primary btn-sm" data-open-alat-file-modal>
@@ -112,7 +112,6 @@
                     </div>
                 </div>
             </div>
-            {{-- ===== END FOTO ALAT ===== --}}
 
             <div class="col-12 d-flex justify-content-end gap-2 mt-2">
                 <a href="{{ route('alat.list') }}" class="btn btn-outline-secondary">Batal</a>
@@ -122,8 +121,7 @@
     </div>
 </div>
 
-{{-- Reuse modal file picker yang sama --}}
-@include('admin.pengembalian.partials.file-picker-modal', ['files' => $files])
+@include('admin.alat.partials.file-picker-modal', ['files' => $files])
 @endsection
 
 @push('styles')
@@ -140,7 +138,6 @@
         flex-shrink: 0;
         background: #f9fafb;
     }
-
     .alat-file-preview img {
         width: 100%;
         height: 100%;
@@ -153,7 +150,25 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // ── Elemen ──────────────────────────────────────────────
+    // Elemen kondisi dan stok
+    const baikInput = document.getElementById('baik');
+    const rusakRinganInput = document.getElementById('rusak_ringan');
+    const diperbaikiInput = document.getElementById('diperbaiki');
+    const jumlahStokInput = document.getElementById('jumlah_stok');
+
+    function updateJumlahStok() {
+        const baik = parseInt(baikInput.value) || 0;
+        const rusak = parseInt(rusakRinganInput.value) || 0;
+        const perbaiki = parseInt(diperbaikiInput.value) || 0;
+        jumlahStokInput.value = baik + rusak + perbaiki;
+    }
+
+    [baikInput, rusakRinganInput, diperbaikiInput].forEach(input => {
+        input.addEventListener('input', updateJumlahStok);
+    });
+    updateJumlahStok();
+
+    // --- File picker logic (sama seperti sebelumnya) ---
     const fileSelect       = document.getElementById('gambar_alat_id');
     const filePreview      = document.getElementById('alatFilePreview');
     const fileNameLabel    = document.getElementById('alatFileName');
@@ -174,23 +189,19 @@ document.addEventListener('DOMContentLoaded', () => {
         fileModal = new bootstrap.Modal(fileModalElement);
     }
 
-    // ── Preview ──────────────────────────────────────────────
     function updateFilePreview() {
         const opt = fileSelect?.selectedOptions?.[0];
-
         if (!opt || !opt.value) {
             filePreview.innerHTML = '<span class="text-muted small">Belum ada gambar dipilih</span>';
             fileNameLabel.textContent = 'Belum ada gambar dipilih';
             fileClearBtn?.classList.add('d-none');
             return;
         }
-
         const img = document.createElement('img');
         img.src = opt.dataset.preview ?? '';
         img.alt = opt.dataset.name ?? 'Preview';
         filePreview.innerHTML = '';
         filePreview.appendChild(img);
-
         fileNameLabel.textContent = opt.dataset.name ?? 'File terpilih';
         fileClearBtn?.classList.remove('d-none');
     }
@@ -201,24 +212,20 @@ document.addEventListener('DOMContentLoaded', () => {
         fileSelect.dispatchEvent(new Event('change'));
     }
 
-    // ── Tombol buka modal ────────────────────────────────────
     document.querySelectorAll('[data-open-alat-file-modal]').forEach(btn => {
         btn.addEventListener('click', () => fileModal?.show());
     });
 
-    // ── Tombol hapus pilihan ─────────────────────────────────
     fileClearBtn?.addEventListener('click', () => {
         fileSelect.value = '';
         fileSelect.dispatchEvent(new Event('change'));
     });
 
-    // ── Pilih file dari modal ────────────────────────────────
     function attachPickAction(row) {
         row.querySelector('[data-file-pick]')?.addEventListener('click', () => {
             selectFileOption(row.querySelector('[data-file-pick]').dataset.fileId);
             fileModal?.hide();
         });
-
         row.querySelector('[data-file-delete]')?.addEventListener('click', () => {
             handleFileDelete(
                 row.querySelector('[data-file-delete]').dataset.fileId,
@@ -227,11 +234,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Delete file ──────────────────────────────────────────
     async function handleFileDelete(fileId, triggerButton) {
         const fileName = triggerButton?.dataset?.fileName ?? 'file ini';
         let confirmed = true;
-
         if (typeof Swal !== 'undefined') {
             const result = await Swal.fire({
                 title: 'Hapus gambar?',
@@ -247,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             confirmed = window.confirm(`Hapus ${fileName}?`);
         }
-
         if (!confirmed) return;
 
         const originalHtml = triggerButton.innerHTML;
@@ -263,22 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Accept': 'application/json',
                 },
             });
-
             const data = await response.json().catch(() => ({}));
             if (!response.ok || !data.success) throw new Error(data.message || 'Gagal menghapus file.');
 
             triggerButton.closest('[data-file-row]')?.remove();
-
-            // Hapus dari option select juga
             Array.from(fileSelect?.options ?? [])
                 .find(o => o.value === String(fileId))?.remove();
-
             if (fileSelect?.value === String(fileId)) {
                 fileSelect.value = '';
                 fileSelect.dispatchEvent(new Event('change'));
             }
-
-            // Tampilkan empty state jika tabel kosong
             const tbody = document.getElementById('filesTableBody');
             if (!tbody?.children.length) {
                 filesContainer.innerHTML = `
@@ -287,7 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="text-muted mt-3 mb-0">Belum ada file yang dapat dipilih.</p>
                     </div>`;
             }
-
             if (typeof Swal !== 'undefined') {
                 Swal.fire({ title: 'Terhapus', icon: 'success', timer: 1500, showConfirmButton: false });
             }
@@ -303,56 +300,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ── Upload AJAX ──────────────────────────────────────────
     function addFileToTable(file) {
         const emptyState = document.getElementById('emptyState');
         emptyState?.remove();
-
         let tbody = document.getElementById('filesTableBody');
         if (!tbody) {
             filesContainer.innerHTML = `
                 <div class="table-responsive">
                     <table class="table align-middle" id="filesTable">
                         <thead class="table-light">
-                            <tr>
-                                <th style="width:80px;">Preview</th>
-                                <th>Nama File</th>
-                                <th class="text-end">Aksi</th>
-                            </tr>
+                            <tr><th style="width:80px;">Preview</th><th>Nama File</th><th class="text-end">Aksi</th></tr>
                         </thead>
                         <tbody id="filesTableBody"></tbody>
                     </table>
                 </div>`;
             tbody = document.getElementById('filesTableBody');
         }
-
         const previewPath = file.path || file.file_path;
         const fileName    = file.nama_file || file.file_name || 'Tanpa nama';
-
         const row = document.createElement('tr');
         row.dataset.fileRow = String(file.id);
         row.innerHTML = `
-            <td>
+            <tr>
                 <div class="rounded overflow-hidden border" style="width:64px;height:64px;cursor:zoom-in;"
                     data-file-preview data-file-url="${previewPath}" data-file-name="${fileName}">
                     <img src="${previewPath}" alt="${fileName}" class="w-100 h-100 object-fit-cover">
                 </div>
             </td>
-            <td>
-                <div class="fw-semibold">${fileName}</div>
-                <div class="text-muted small">ID: ${file.id}</div>
-            </td>
+            <td><div class="fw-semibold">${fileName}</div><div class="text-muted small">ID: ${file.id}</div></td>
             <td class="text-end">
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                        data-file-preview data-file-url="${previewPath}" data-file-name="${fileName}">Lihat</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary"
-                        data-file-pick data-file-id="${file.id}">Gunakan</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger"
-                        data-file-delete data-file-id="${file.id}" data-file-name="${fileName}">Hapus</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-file-preview data-file-url="${previewPath}" data-file-name="${fileName}">Lihat</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-file-pick data-file-id="${file.id}">Gunakan</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-file-delete data-file-id="${file.id}" data-file-name="${fileName}">Hapus</button>
                 </div>
-            </td>`;
-
+            </td>
+        `;
         tbody.insertBefore(row, tbody.firstChild);
         attachPickAction(row);
     }
@@ -374,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             uploadButton.disabled = true;
             uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
-
             try {
                 const response = await fetch('{{ route('filemanager.upload') }}', {
                     method: 'POST',
@@ -383,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const data = await response.json();
                 if (!response.ok || !data.success) throw new Error(data.message || 'Upload gagal');
-
                 uploadForm.reset();
                 if (data.file) {
                     addFileToTable(data.file);
@@ -404,12 +385,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Init ─────────────────────────────────────────────────
     document.querySelectorAll('[data-file-row]').forEach(row => attachPickAction(row));
     fileSelect?.addEventListener('change', updateFilePreview);
     updateFilePreview();
 
-    // Inisialisasi old() value jika ada
     @if(old('gambar_alat_id'))
         fileSelect.value = '{{ old('gambar_alat_id') }}';
         updateFilePreview();

@@ -225,9 +225,9 @@ class PengembalianController extends Controller
             'peminjam_id',
             'tanggal_pinjam',
             'tanggal_kembali',
+            'metode_pembayaran',
             'status'
-        )->where('status', 'approve')
-            ->orderByDesc('tanggal_pinjam')
+        )->orderByDesc('tanggal_pinjam')
             ->get();
 
         return view('petugas.pengembalian.edit', [

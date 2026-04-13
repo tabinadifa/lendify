@@ -89,7 +89,6 @@
                             <th>Jadwal Peminjaman</th>
                             <th>Status</th>
                             <th>Pengembalian</th>
-                            <th class="text-start">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -131,19 +130,6 @@
                                     @else
                                         <span class="text-muted">Belum ada data</span>
                                     @endif
-                                </td>
-                                <td class="text-start">
-                                    <form action="{{ route('peminjam.riwayat.destroy', $item) }}" method="POST"
-                                        class="d-inline-block form-hapus"
-                                        data-title="Hapus riwayat ini?"
-                                        data-text="Riwayat peminjaman akan dihapus secara permanen.">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            <i class="bi bi-trash"></i>
-                                            <span class="ms-1">Hapus</span>
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                         @empty

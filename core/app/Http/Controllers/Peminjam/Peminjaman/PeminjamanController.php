@@ -18,8 +18,12 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        // Tampilkan alat yang memiliki stok baik > 0 ATAU stok rusak_ringan > 0
         $query = Alat::with('kategori', 'gambarAlat')
-            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'created_at', 'gambar_alat_id');
+            ->select('id', 'kategori_id', 'nama_alat', 'deskripsi', 'jumlah_stok', 'baik', 'rusak_ringan', 'diperbaiki', 'created_at', 'gambar_alat_id')
+            ->where(function($q) {
+                $q->where('baik', '>', 0)->orWhere('rusak_ringan', '>', 0);
+            });
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -41,14 +45,21 @@ class PeminjamanController extends Controller
         return view('peminjam.peminjaman.list', compact('alats', 'kategoriAlats'));
     }
 
-    public function create(Request $request, Alat $alat) {
+    public function create(Request $request, Alat $alat)
+    {
         if (!Auth::check()) {
             return redirect()->route('auth.login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        // Cek ketersediaan: baik > 0 atau rusak_ringan > 0
+        if ($alat->baik <= 0 && $alat->rusak_ringan <= 0) {
+            return redirect()->route('peminjam.peminjaman.list')
+                ->with('error', 'Alat ini tidak tersedia untuk dipinjam (stok baik dan rusak ringan habis).');
+        }
+
         $alat = Alat::with('gambarAlat')
-            ->select('id', 'nama_alat', 'jumlah_stok', 'gambar_alat_id')
+            ->select('id', 'nama_alat', 'jumlah_stok', 'baik', 'rusak_ringan', 'diperbaiki', 'gambar_alat_id', 'deskripsi')
             ->where('id', $alat->id)
             ->first();
 
@@ -63,25 +74,41 @@ class PeminjamanController extends Controller
         }
 
         $validated = $request->validate([
-            'alat_id' => ['required', 'exists:alat,id'],
-            'total_alat' => ['required', 'integer', 'min:1'],
-            'tanggal_pinjam' => ['required', 'date', 'after_or_equal:today'],
+            'alat_id'      => ['required', 'exists:alat,id'],
+            'total_alat'   => ['required', 'integer', 'min:1'],
+            'tanggal_pinjam'  => ['required', 'date', 'after_or_equal:today'],
             'tanggal_kembali' => ['required', 'date', 'after:tanggal_pinjam'],
         ]);
 
         $alat = Alat::find($validated['alat_id']);
-        if ($validated['total_alat'] > $alat->jumlah_stok) {
+
+        // Tentukan kondisi yang bisa dipinjam dan batas maksimal
+        if ($alat->baik > 0) {
+            // Prioritas: pakai stok baik
+            $maxBorrow = $alat->baik;
+            $kondisi = 'baik';
+        } elseif ($alat->rusak_ringan > 0) {
+            // Stok baik habis, gunakan rusak ringan sebagai pilihan terakhir
+            $maxBorrow = $alat->rusak_ringan;
+            $kondisi = 'rusak_ringan';
+        } else {
             return back()->withInput()
-                ->withErrors(['total_alat' => "Jumlah alat yang dipinjam tidak boleh melebihi stok tersedia ({$alat->jumlah_stok})."]);
+                ->withErrors(['total_alat' => 'Maaf, alat ini sedang tidak tersedia untuk dipinjam.']);
+        }
+
+        if ($validated['total_alat'] > $maxBorrow) {
+            return back()->withInput()
+                ->withErrors(['total_alat' => "Jumlah alat yang dipinjam tidak boleh melebihi stok {$kondisi} yang tersedia ({$maxBorrow})."]);
         }
 
         Peminjaman::create([
-            'alat_id' => $validated['alat_id'],
-            'peminjam_id' => Auth::id(),
-            'total_alat' => $validated['total_alat'],
-            'tanggal_pinjam' => $validated['tanggal_pinjam'],
-            'tanggal_kembali' => $validated['tanggal_kembali'],
-            'status' => 'pending',
+            'alat_id'          => $validated['alat_id'],
+            'peminjam_id'      => Auth::id(),
+            'total_alat'       => $validated['total_alat'],
+            'kondisi_dipinjam' => $kondisi, // simpan kondisi yang dipinjam
+            'tanggal_pinjam'   => $validated['tanggal_pinjam'],
+            'tanggal_kembali'  => $validated['tanggal_kembali'],
+            'status'           => 'pending',
         ]);
 
         return redirect()->route('peminjam.peminjaman.list')

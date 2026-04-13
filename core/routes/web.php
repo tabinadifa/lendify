@@ -94,6 +94,7 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
 
         Route::controller(LogAktivitasController::class)->prefix('log-aktivitas')->group(function () {
             Route::get('/', 'index')->name('admin.log.index');
+            Route::get('/export-pdf', 'exportPdf')->name('admin.log.export-pdf');
         });
     });
 

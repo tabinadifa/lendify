@@ -225,7 +225,7 @@ $today = now()->format('Y-m-d');
                     <div class="col-md-6">
                         <label for="status" class="form-label">Status Pembayaran Denda</label>
                         <select name="status" id="status" class="form-select" required>
-                            <option value="">Pilih metode</option>
+                            <option value="">Pilih status</option>
                             <option value="lunas" {{ old('status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
                             <option value="belum_lunas" {{ old('status') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
                         </select>
@@ -235,7 +235,9 @@ $today = now()->format('Y-m-d');
                         <label for="metode_pembayaran" class="form-label">Metode Pembayaran</label>
                         <select name="metode_pembayaran" id="metode_pembayaran" class="form-select">
                             <option value="">Pilih metode</option>
-                            <option value="Tunai" {{ old('metode_pembayaran') == 'Tunai' ? 'selected' : '' }}>Tunai</option>
+                            <option value="tidak_denda" {{ old('metode_pembayaran') == 'tidak_denda' ? 'selected' : '' }}>Tidak Denda</option>
+                            <option value="belum_ditentukan" {{ old('metode_pembayaran') == 'belum_ditentukan' ? 'selected' : '' }}>Belum Ditentukan</option>
+                            <option value="tunai" {{ old('metode_pembayaran') == 'tunai' ? 'selected' : '' }}>Tunai</option>
                             <option value="QRIS" {{ old('metode_pembayaran') == 'QRIS' ? 'selected' : '' }}>QRIS</option>
                         </select>
                     </div>
@@ -712,7 +714,8 @@ $today = now()->format('Y-m-d');
                 uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
                 hideFileAlerts();
                 try {
-                    const response = await fetch('{{ route('filemanager.upload') }}', {
+                    const response = await fetch('{{ route('
+                        filemanager.upload ') }}', {
                             method: 'POST',
                             body: formData,
                             headers: {

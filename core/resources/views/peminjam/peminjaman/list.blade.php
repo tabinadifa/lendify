@@ -4,7 +4,9 @@
 
 @push('styles')
 <style>
-    .page-title { color: #1e4d35; }
+    .page-title {
+        color: #1e4d35;
+    }
 
     .filter-card,
     .catalog-card {
@@ -13,7 +15,10 @@
         box-shadow: 0 4px 14px rgba(23, 56, 35, 0.08);
     }
 
-    .stock-chip { font-size: 0.85rem; font-weight: 600; }
+    .stock-chip {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
 
     .alat-card {
         border: 1px solid rgba(30, 77, 53, 0.12);
@@ -21,13 +26,13 @@
         overflow: hidden;
         height: 100%;
         transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 15px 35px rgba(30, 77, 53, 0.16), 0 6px 14px rgba(0,0,0,0.08);
+        box-shadow: 0 15px 35px rgba(30, 77, 53, 0.16), 0 6px 14px rgba(0, 0, 0, 0.08);
     }
 
     .alat-card:hover {
         border-color: #1e4d35;
         transform: translateY(-4px);
-        box-shadow: 0 24px 45px rgba(30, 77, 53, 0.2), 0 12px 24px rgba(0,0,0,0.1);
+        box-shadow: 0 24px 45px rgba(30, 77, 53, 0.2), 0 12px 24px rgba(0, 0, 0, 0.1);
     }
 
     .alat-card-img {
@@ -48,7 +53,15 @@
         font-size: 2.5rem;
     }
 
-    .alat-card-body { padding: 1.25rem; }
+    .alat-card-body {
+        padding: 1.25rem;
+    }
+
+    .condition-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 20px;
+    }
 </style>
 @endpush
 
@@ -70,9 +83,9 @@
                 <label for="per_page" class="form-label text-uppercase text-muted small">Per Halaman</label>
                 <select id="per_page" name="per_page" class="form-select" onchange="this.form.submit()">
                     @foreach ([5, 10, 25, 50] as $option)
-                        <option value="{{ $option }}" @selected((int) request('per_page', 10) === $option)>
-                            {{ $option }}
-                        </option>
+                    <option value="{{ $option }}" @selected((int) request('per_page', 10)===$option)>
+                        {{ $option }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -90,72 +103,82 @@
 <div class="card catalog-card">
     <div class="card-body">
         @if ($alats->isEmpty())
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-inbox mb-2" style="font-size: 2rem;"></i>
-                <p class="mb-0">Belum ada alat yang tersedia saat ini.</p>
-            </div>
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox mb-2" style="font-size: 2rem;"></i>
+            <p class="mb-0">Belum ada alat yang tersedia saat ini.</p>
+        </div>
         @else
-            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-                @foreach ($alats as $alat)
-                    @php
-                        $isOutOfStock = (int) $alat->jumlah_stok <= 0;
-                        $gambar       = $alat->gambarAlat;
-                        $gambarUrl    = $gambar ? asset($gambar->file_path) : null;
-                    @endphp
-                    <div class="col">
-                        <div class="alat-card d-flex flex-column">
-                            {{-- Gambar --}}
-                            @if ($gambarUrl)
-                                <img src="{{ $gambarUrl }}"
-                                     alt="{{ $alat->nama_alat }}"
-                                     class="alat-card-img">
-                            @else
-                                <div class="alat-card-img-placeholder">
-                                    <i class="bi bi-tools"></i>
-                                </div>
-                            @endif
-
-                            {{-- Body --}}
-                            <div class="alat-card-body d-flex flex-column flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <h5 class="fw-semibold mb-1">{{ $alat->nama_alat }}</h5>
-                                        <p class="text-muted small mb-0">
-                                            {{ $alat->kategori->nama_kategori ?? 'Tanpa kategori' }}
-                                        </p>
-                                    </div>
-                                    <span class="badge bg-{{ $isOutOfStock ? 'danger' : 'success' }} stock-chip ms-2 flex-shrink-0">
-                                        {{ $isOutOfStock ? 'Stok Habis' : 'Stok: ' . $alat->jumlah_stok }}
-                                    </span>
-                                </div>
-
-                                @if ($alat->deskripsi)
-                                    <p class="text-muted small mb-3" style="max-height:3.75rem;overflow:hidden;">
-                                        {{ $alat->deskripsi }}
-                                    </p>
-                                @endif
-
-                                <div class="mt-auto">
-                                    <a href="{{ $isOutOfStock ? '#' : route('peminjam.peminjaman.create', $alat) }}"
-                                        class="btn btn-success w-100 {{ $isOutOfStock ? 'disabled' : '' }}">
-                                        Ajukan Pinjam
-                                    </a>
-                                </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            @foreach ($alats as $alat)
+            @php
+            $canBorrow = ($alat->baik > 0) || ($alat->rusak_ringan > 0);
+            $stokInfo = '';
+            if ($alat->baik > 0) {
+            $stokInfo = "Baik: {$alat->baik}";
+            if ($alat->rusak_ringan > 0) $stokInfo .= " | Rusak Ringan: {$alat->rusak_ringan}";
+            } elseif ($alat->rusak_ringan > 0) {
+            $stokInfo = "Rusak Ringan: {$alat->rusak_ringan} (Baik habis)";
+            }
+            $badgeClass = $canBorrow ? 'success' : 'secondary';
+            $gambar = $alat->gambarAlat;
+            $gambarUrl = $gambar ? asset($gambar->file_path) : null;
+            @endphp
+            <div class="col">
+                <div class="alat-card d-flex flex-column">
+                    @if ($gambarUrl)
+                    <img src="{{ $gambarUrl }}" alt="{{ $alat->nama_alat }}" class="alat-card-img">
+                    @else
+                    <div class="alat-card-img-placeholder">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    @endif
+                    <div class="alat-card-body d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="fw-semibold mb-1">{{ $alat->nama_alat }}</h5>
+                                <p class="text-muted small mb-0">
+                                    {{ $alat->kategori->nama_kategori ?? 'Tanpa kategori' }}
+                                </p>
                             </div>
+                            <span class="badge bg-{{ $badgeClass }} stock-chip ms-2 flex-shrink-0">
+                                {{ $canBorrow ? $stokInfo : 'Tidak Tersedia' }}
+                            </span>
+                        </div>
+
+                        {{-- Informasi kondisi alat --}}
+                        <div class="d-flex gap-2 mb-2 flex-wrap">
+                            <span class="condition-badge bg-success text-white">Baik: {{ $alat->baik }}</span>
+                            <span class="condition-badge bg-warning text-dark">Rusak Ringan: {{ $alat->rusak_ringan }}</span>
+                            <span class="condition-badge bg-info text-dark">Diperbaiki: {{ $alat->diperbaiki }}</span>
+                        </div>
+
+                        @if ($alat->deskripsi)
+                        <p class="text-muted small mb-3" style="max-height:3.75rem;overflow:hidden;">
+                            {{ $alat->deskripsi }}
+                        </p>
+                        @endif
+
+                        <div class="mt-auto">
+                            <a href="{{ $canBorrow ? route('peminjam.peminjaman.create', $alat) : '#' }}"
+                                class="btn btn-success w-100 {{ !$canBorrow ? 'disabled' : '' }}">
+                                Ajukan Pinjam
+                            </a>
                         </div>
                     </div>
-                @endforeach
+                </div>
             </div>
+            @endforeach
+        </div>
         @endif
     </div>
 
     @if ($alats->hasPages())
-        <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <small class="text-muted mb-2 mb-md-0">
-                Menampilkan {{ $alats->firstItem() }} - {{ $alats->lastItem() }} dari {{ $alats->total() }} alat
-            </small>
-            {{ $alats->onEachSide(1)->links('pagination::bootstrap-5') }}
-        </div>
+    <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <small class="text-muted mb-2 mb-md-0">
+            Menampilkan {{ $alats->firstItem() }} - {{ $alats->lastItem() }} dari {{ $alats->total() }} alat
+        </small>
+        {{ $alats->onEachSide(1)->links('pagination::bootstrap-5') }}
+    </div>
     @endif
 </div>
 @endsection

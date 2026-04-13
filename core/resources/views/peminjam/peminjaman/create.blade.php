@@ -16,17 +16,21 @@
         margin-bottom: 1rem;
         border: 1px solid #e5e7eb;
     }
-
     .alat-img-box img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
     }
-
     .alat-img-placeholder {
         font-size: 3.5rem;
         color: #9ca3af;
+    }
+    .condition-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        display: inline-block;
     }
 </style>
 @endpush
@@ -58,13 +62,11 @@
 @endif
 
 <div class="row g-4">
-    {{-- Informasi Alat --}}
     <div class="col-lg-5">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
                 <h5 class="fw-semibold mb-3">Informasi Alat</h5>
 
-                {{-- Gambar --}}
                 <div class="alat-img-box">
                     @if ($gambarUrl)
                         <img src="{{ $gambarUrl }}" alt="{{ $alat->nama_alat }}">
@@ -85,10 +87,20 @@
                         <td>{{ $alat->kategori->nama_kategori ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted">Stok Tersedia</th>
+                        <th class="text-muted">Kondisi Alat</th>
                         <td>
-                            <span class="badge text-bg-{{ $alat->jumlah_stok > 0 ? 'success' : 'danger' }}">
-                                {{ number_format($alat->jumlah_stok) }}
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="condition-badge bg-success text-white">Baik: {{ $alat->baik }}</span>
+                                <span class="condition-badge bg-warning text-dark">Rusak Ringan: {{ $alat->rusak_ringan }}</span>
+                                <span class="condition-badge bg-info text-dark">Diperbaiki: {{ $alat->diperbaiki }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Stok Baik Tersedia</th>
+                        <td>
+                            <span class="badge text-bg-{{ $alat->baik > 0 ? 'success' : 'danger' }}">
+                                {{ number_format($alat->baik) }}
                             </span>
                         </td>
                     </tr>
@@ -101,13 +113,12 @@
                 </table>
 
                 <p class="text-muted small mt-3 mb-0">
-                    Pastikan tanggal pinjam dan kembali disesuaikan dengan kebutuhan pemakaian.
+                    Hanya alat dengan kondisi <strong>baik</strong> yang dapat dipinjam. Stok rusak ringan dan diperbaiki tidak tersedia untuk peminjaman.
                 </p>
             </div>
         </div>
     </div>
 
-    {{-- Form Peminjaman --}}
     <div class="col-lg-7">
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body">
@@ -118,9 +129,9 @@
                     <div class="col-md-6">
                         <label for="total_alat" class="form-label">Jumlah Alat</label>
                         <input type="number" id="total_alat" name="total_alat" class="form-control"
-                            min="1" max="{{ $alat->jumlah_stok }}"
+                            min="1" max="{{ $alat->baik }}"
                             value="{{ old('total_alat', 1) }}" required>
-                        <small class="text-muted">Maksimal {{ number_format($alat->jumlah_stok) }} unit.</small>
+                        <small class="text-muted">Maksimal {{ number_format($alat->baik) }} unit (stok baik).</small>
                     </div>
 
                     <div class="col-md-6">

@@ -16,6 +16,9 @@ class Alat extends Model
         'nama_alat',
         'deskripsi',
         'jumlah_stok',
+        'rusak_ringan',
+        'diperbaiki',
+        'baik',
         'gambar_alat_id'
     ];
 

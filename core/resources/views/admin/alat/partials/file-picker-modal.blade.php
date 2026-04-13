@@ -46,7 +46,7 @@
                                     @foreach ($files as $file)
                                         @php
                                             $previewPath = asset($file->file_path ?? $file->path);
-                                            $fileName = $file->nama_file ?? $file->file_name ?? 'Tanpa nama';
+                                            $fileName = $file->file_name ?? $file->nama_file ?? 'Tanpa nama';
                                         @endphp
                                         <tr data-file-row="{{ $file->id }}">
                                             <td>
