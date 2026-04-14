@@ -112,6 +112,7 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
             Route::get('{pengembalian}', 'show')->name('petugas.pengembalian.show');
             Route::get('{pengembalian}/edit', 'edit')->name('petugas.pengembalian.edit');
             Route::put('{pengembalian}', 'update')->name('petugas.pengembalian.update');
+            Route::get('/{pengembalian}/send-whatsapp', 'sendWhatsApp')->name('petugas.pengembalian.send-whatsapp');
         });
 
         Route::controller(PetugasLaporanController::class)->prefix('laporan')->group(function () {

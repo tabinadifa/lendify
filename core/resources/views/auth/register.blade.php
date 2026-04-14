@@ -28,6 +28,11 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">No. Telepon</label>
+                        <input type="text" name="phone" class="form-control" maxlength="13" required pattern="\d{1,13}">
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Password</label>
                         <input type="password" name="password" class="form-control" required>
                     </div>
@@ -42,7 +47,7 @@
                     </button>
 
                     <div class="text-center mt-3">
-                        <small>Sudah punya akun?  
+                        <small>Sudah punya akun?
                             <a class="auth-link" href="{{ route('login') }}">Login</a>
                         </small>
                     </div>
@@ -55,33 +60,42 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form[action="{{ route('auth.register.process') }}"]');
-    if (!form) return;
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[action="{{ route('auth.register.process') }}"]');
+        if (!form) return;
 
-    form.addEventListener('submit', function (event) {
-        const password = form.querySelector('input[name="password"]');
-        const confirmation = form.querySelector('input[name="password_confirmation"]');
-        if (password && confirmation && password.value !== confirmation.value) {
-            event.preventDefault();
+        form.addEventListener('submit', function(event) {
+            const password = form.querySelector('input[name="password"]');
+            const confirmation = form.querySelector('input[name="password_confirmation"]');
+            if (password && confirmation && password.value !== confirmation.value) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Password tidak sama',
+                    text: 'Pastikan password dan konfirmasi password sudah sesuai.',
+                    icon: 'error',
+                    confirmButtonColor: '#90AB8B'
+                });
+            }
+        });
+
+        const emailError = @json($errors -> first('email'));
+        if (emailError) {
             Swal.fire({
-                title: 'Password tidak sama',
-                text: 'Pastikan password dan konfirmasi password sudah sesuai.',
+                title: 'Email sudah terdaftar',
+                text: emailError,
                 icon: 'error',
                 confirmButtonColor: '#90AB8B'
             });
         }
-    });
 
-    const emailError = @json($errors->first('email'));
-    if (emailError) {
-        Swal.fire({
-            title: 'Email sudah terdaftar',
-            text: emailError,
-            icon: 'error',
-            confirmButtonColor: '#90AB8B'
-        });
-    }
-});
+        const phoneInput = form.querySelector('input[name="phone"]');
+
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                // Hanya angka & maksimal 13 digit
+                this.value = this.value.replace(/\D/g, '').slice(0, 13);
+            });
+        }
+    });
 </script>
 @endpush

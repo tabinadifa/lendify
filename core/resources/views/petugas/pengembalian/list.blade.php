@@ -127,6 +127,18 @@
                                     class="btn btn-sm btn-outline-secondary">
                                     Lihat
                                 </a>
+                                @if(!empty($item->peminjaman->peminjam->phone))
+                                <a href="{{ route('petugas.pengembalian.send-whatsapp', $item->id) }}"
+                                    class="btn btn-sm btn-outline-success"
+                                    target="_blank"
+                                    title="Kirim ke WhatsApp">
+                                    <i class="fab fa-whatsapp"></i> WA
+                                </a>
+                                @else
+                                <button class="btn btn-sm btn-outline-secondary" disabled title="Nomor HP tidak tersedia">
+                                    <i class="fab fa-whatsapp"></i> WA
+                                </button>
+                                @endif
                             </div>
                         </td>
                     </tr>

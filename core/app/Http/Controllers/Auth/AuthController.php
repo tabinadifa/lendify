@@ -70,6 +70,7 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
             'username' => 'required|string|max:100|unique:users',
+            'phone'    => 'required|string|max:20',
             'password' => ['required', 'confirmed', Password::defaults()],
         ], [
             'email.unique' => 'Email sudah terdaftar, silakan gunakan email lain.',
@@ -79,6 +80,7 @@ class AuthController extends Controller
             'name'           => $request->name,
             'email'          => $request->email,
             'username'       => $request->username,
+            'phone'          => $request->phone,
             'password'       => Hash::make($request->password),
             'role'           => 'peminjam',
             'is_active'      => true,

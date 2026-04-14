@@ -133,16 +133,11 @@
                     </div>
                     @endif
                     <div class="alat-card-body d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h5 class="fw-semibold mb-1">{{ $alat->nama_alat }}</h5>
-                                <p class="text-muted small mb-0">
-                                    {{ $alat->kategori->nama_kategori ?? 'Tanpa kategori' }}
-                                </p>
-                            </div>
-                            <span class="badge bg-{{ $badgeClass }} stock-chip ms-2 flex-shrink-0">
-                                {{ $canBorrow ? $stokInfo : 'Tidak Tersedia' }}
-                            </span>
+                        <div class="mb-2">
+                            <h5 class="fw-semibold mb-1">{{ $alat->nama_alat }}</h5>
+                            <p class="text-muted small mb-0">
+                                {{ $alat->kategori->nama_kategori ?? 'Tanpa kategori' }}
+                            </p>
                         </div>
 
                         {{-- Informasi kondisi alat --}}

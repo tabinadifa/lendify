@@ -23,44 +23,70 @@
         <form action="{{ route('user.store') }}" method="POST" class="row g-3">
             @csrf
 
+            {{-- Nama Lengkap --}}
             <div class="col-md-6">
-                <label for="name" class="form-label">Nama Lengkap</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
+                <label for="name" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                <input type="text" id="name" name="name" class="form-control @error('name') is-invalid @enderror"
+                       value="{{ old('name') }}" required>
+                @error('name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
+            {{-- Username (alpha_dash) --}}
             <div class="col-md-6">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" class="form-control" value="{{ old('username') }}" required>
+                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                <input type="text" id="username" name="username" class="form-control @error('username') is-invalid @enderror"
+                       value="{{ old('username') }}" required>
+                @error('username')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @else
+                    <small class="text-muted">Hanya huruf, angka, garis bawah (_), dan strip (-).</small>
+                @enderror
             </div>
 
+            {{-- Email --}}
             <div class="col-md-6">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                       value="{{ old('email') }}" required>
+                @error('email')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
+            {{-- Role (sesuai pilihan umum) --}}
             <div class="col-md-6">
-                <label for="role" class="form-label">Role</label>
-                <select name="role" id="role" class="form-select" required>
-                    <option value="" disabled selected>Pilih role</option>
+                <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                <select name="role" id="role" class="form-select @error('role') is-invalid @enderror" required>
+                    <option value="" disabled {{ old('role') ? '' : 'selected' }}>Pilih role</option>
                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
-                    <option value="peminjam" {{ old('role') == 'peminjam' ? 'selected' : '' }}>Peminjam</option>
                 </select>
+                @error('role')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            {{-- FIELD PASSWORD DENGAN IKON MATA --}}
+            {{-- Password dengan toggle --}}
             <div class="col-md-6">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                 <div class="input-group">
-                    <input type="password" id="password" name="password" class="form-control" required>
+                    <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror"
+                           required>
                     <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                        <i class="bi bi-eye-slash"></i>   {{-- Ikon mata tertutup --}}
+                        <i class="bi bi-eye-slash"></i>
                     </button>
                 </div>
-                <small class="text-muted">Minimal 8 karakter.</small>
+                @error('password')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @else
+                    <small class="text-muted">Minimal 8 karakter.</small>
+                @enderror
             </div>
 
-            <div class="col-12 d-flex justify-content-end gap-2">
+            {{-- Tombol aksi --}}
+            <div class="col-12 d-flex justify-content-end gap-2 mt-4">
                 <a href="{{ route('user.list') }}" class="btn btn-outline-secondary">Batal</a>
                 <button type="submit" class="btn btn-success">Simpan</button>
             </div>
@@ -68,17 +94,12 @@
     </div>
 </div>
 
-{{-- SCRIPT UNTUK TOGGLE PASSWORD --}}
+{{-- Script toggle password --}}
 <script>
-    const toggleBtn = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-
-    toggleBtn.addEventListener('click', function() {
-        // Toggle tipe input
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordInput = document.getElementById('password');
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-
-        // Toggle ikon mata
         const icon = this.querySelector('i');
         icon.classList.toggle('bi-eye');
         icon.classList.toggle('bi-eye-slash');

@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class PengembalianController extends Controller
 {
@@ -28,7 +29,7 @@ class PengembalianController extends Controller
         $query = Pengembalian::with([
             'peminjaman:id,alat_id,peminjam_id,tanggal_pinjam,tanggal_kembali',
             'peminjaman.alat:id,nama_alat',
-            'peminjaman.peminjam:id,name,username,email',
+            'peminjaman.peminjam:id,name,username,email,phone',
             'fileBuktiPengembalian:id,file_name,file_path',
         ])->select(
             'id',
@@ -294,6 +295,37 @@ class PengembalianController extends Controller
             ->with('success', 'Data pengembalian berhasil diperbarui.');
     }
 
+    public function sendWhatsApp(Pengembalian $pengembalian)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('auth.login')
+                ->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        $peminjam = $pengembalian->peminjaman->peminjam;
+
+        if (empty($peminjam->phone)) {
+            return redirect()->back()
+                ->with('error', 'Nomor WhatsApp peminjam belum diisi.');
+        }
+
+        // Bersihkan nomor HP (hapus spasi, tanda kurung, dll)
+        $phone = preg_replace('/[^0-9]/', '', $peminjam->phone);
+        // Pastikan diawali kode negara (contoh: 62 untuk Indonesia)
+        if (!Str::startsWith($phone, '62') && !Str::startsWith($phone, '0')) {
+            $phone = '62' . $phone;
+        }
+        if (Str::startsWith($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        $message = $this->getWhatsAppMessageTemplate($pengembalian);
+        $encodedMessage = rawurlencode($message);
+        $whatsappUrl = "https://wa.me/{$phone}?text={$encodedMessage}";
+
+        return redirect()->away($whatsappUrl);
+    }
+
     /* =======================
      * DELETE
      * ======================= */
@@ -334,5 +366,36 @@ class PengembalianController extends Controller
 
         $hariTelat = $tglKembali->diffInDays($tglPengembalian);
         return $hariTelat * 2000;
+    }
+
+    private function getWhatsAppMessageTemplate(Pengembalian $pengembalian): string
+    {
+        $peminjam = $pengembalian->peminjaman->peminjam;
+        $alat = $pengembalian->peminjaman->alat;
+        $tanggalPengembalian = Carbon::parse($pengembalian->tanggal_pengembalian)->format('d/m/Y');
+        $kondisiMap = [
+            'baik' => 'Baik',
+            'rusak_ringan' => 'Rusak Ringan',
+            'rusak_berat' => 'Rusak Berat',
+            'hilang' => 'Hilang',
+        ];
+        $kondisi = $kondisiMap[$pengembalian->kondisi_alat] ?? ucfirst($pengembalian->kondisi_alat);
+        $denda = $pengembalian->denda > 0 ? 'Rp ' . number_format($pengembalian->denda, 0, ',', '.') : 'Tidak ada denda';
+        $statusPembayaran = ucfirst($pengembalian->status ?? 'Belum diproses');
+
+        return "📢 *Informasi Pengembalian Alat*
+        
+Halo *{$peminjam->name}*,
+
+Berikut adalah rincian pengembalian alat Anda:
+• *Nama Alat*: {$alat->nama_alat}
+• *Tanggal Pengembalian*: {$tanggalPengembalian}
+• *Kondisi Alat*: {$kondisi}
+• *Denda*: {$denda}
+• *Status Pembayaran*: {$statusPembayaran}
+
+Terima kasih telah menggunakan layanan kami.
+
+- *Petugas*";
     }
 }
