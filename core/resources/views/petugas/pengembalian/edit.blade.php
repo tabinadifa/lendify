@@ -778,8 +778,7 @@ $currentPeminjaman = $peminjamans->firstWhere('id', $selectedPeminjamanId) ?? $p
                 uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
                 hideFileAlerts();
                 try {
-                    const response = await fetch('{{ route('
-                        filemanager.upload ') }}', {
+                    const response = await fetch('{{ route('filemanager.upload') }}', {
                             method: 'POST',
                             body: formData,
                             headers: {

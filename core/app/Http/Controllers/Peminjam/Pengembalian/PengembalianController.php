@@ -76,4 +76,25 @@ class PengembalianController extends Controller
             'pengembalian' => $pengembalian,
         ]);
     }
+
+    /**
+     * Update metode pembayaran denda
+     */
+    public function updateMetodePembayaran(Request $request, Pengembalian $pengembalian)
+    {
+        // Pastikan user yang login adalah pemilik pengembalian
+        if ($pengembalian->peminjaman->peminjam_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $request->validate([
+            'metode_pembayaran' => 'required|in:tunai,QRIS',
+        ]);
+
+        $pengembalian->update([
+            'metode_pembayaran' => $request->metode_pembayaran,
+        ]);
+
+        return redirect()->route('peminjam.pengembalian.list')->with('success', 'Metode pembayaran berhasil disimpan.');
+    }
 }

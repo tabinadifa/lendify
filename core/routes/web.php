@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Peminjam\DashboardController as PeminjamDashboardController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Admin\Kategori\KategoriController as AdminKategoriController;
@@ -41,7 +42,12 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::prefix('lendify')->middleware('auth')->group(function () {
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard', function () {
+        if (Auth::user()->role === 'peminjam') {
+            return app(PeminjamDashboardController::class)->index();
+        }
+        return app(DashboardController::class)->index();
+    })->name('dashboard');
 
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'profile')->name('profile');
@@ -136,6 +142,7 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
         Route::controller(PengembalianController::class)->prefix('pengembalian')->group(function () {
             Route::get('/', 'listPengembalian')->name('peminjam.pengembalian.list');
             Route::get('{pengembalian}', 'show')->name('peminjam.pengembalian.show');
+            Route::put('/pengembalian/{pengembalian}/update-metode', 'updateMetodePembayaran')->name('peminjam.pengembalian.update-metode');
         });
     });
 

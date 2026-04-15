@@ -226,7 +226,6 @@ class PengembalianController extends Controller
             'peminjam_id',
             'tanggal_pinjam',
             'tanggal_kembali',
-            'metode_pembayaran',
             'status'
         )->orderByDesc('tanggal_pinjam')
             ->get();
