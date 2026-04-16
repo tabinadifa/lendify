@@ -18,6 +18,7 @@ use App\Http\Controllers\Peminjam\Riwayat\RiwayatController;
 use App\Http\Controllers\FileManager\FileManagerController;
 use App\Http\Controllers\Admin\LogAktivitas\LogAktivitasController;
 use App\Http\Controllers\Peminjam\Pengembalian\PengembalianController;
+use FontLib\Table\Type\name;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -51,6 +52,8 @@ Route::prefix('lendify')->middleware('auth')->group(function () {
 
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'profile')->name('profile');
+        Route::put('/', 'updateProfile')->name('profile.update');
+        Route::put('/password', 'updatePassword')->name('profile.password');
     });
 
     Route::prefix('admin')->middleware('role:admin')->group(function () {

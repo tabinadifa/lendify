@@ -29,7 +29,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">No. Telepon</label>
-                        <input type="text" name="phone" class="form-control" maxlength="13" required pattern="\d{1,13}">
+                        <input type="text" name="phone" class="form-control" maxlength="13" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea name="address" class="form-control" rows="2" required></textarea>
                     </div>
 
                     <div class="mb-3">
@@ -78,7 +83,8 @@
             }
         });
 
-        const emailError = @json($errors -> first('email'));
+        // ✅ Fixed line below
+        const emailError = @json($errors->first('email'));
         if (emailError) {
             Swal.fire({
                 title: 'Email sudah terdaftar',
@@ -89,10 +95,8 @@
         }
 
         const phoneInput = form.querySelector('input[name="phone"]');
-
         if (phoneInput) {
             phoneInput.addEventListener('input', function() {
-                // Hanya angka & maksimal 13 digit
                 this.value = this.value.replace(/\D/g, '').slice(0, 13);
             });
         }

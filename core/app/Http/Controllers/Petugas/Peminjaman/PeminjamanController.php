@@ -79,7 +79,7 @@ class PeminjamanController extends Controller
         }
 
         $peminjaman->loadMissing(
-            'peminjam:id,name,username,email',
+            'peminjam:id,name,username,email,phone,address',
             'alat:id,nama_alat,kategori_id',
             'alat.kategori:id,nama_kategori'
         );

@@ -82,6 +82,7 @@ class AuthController extends Controller
             'email'          => $request->email,
             'username'       => $request->username,
             'phone'          => $request->phone,
+            'address'        => $request->address,
             'password'       => Hash::make($request->password),
             'role'           => 'peminjam',
             'is_active'      => true,
