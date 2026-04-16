@@ -3,48 +3,71 @@
 namespace App\Services;
 
 use App\Models\Alat;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class AlatStockService
 {
-    public static function deduct(int $alatId, int $quantity): void
+    /**
+     * Mengurangi stok alat (prioritas baik, lalu rusak ringan).
+     * Mengembalikan array ['baik' => int, 'rusak' => int] yang menunjukkan jumlah yang diambil dari masing-masing.
+     *
+     * @param int $alatId
+     * @param int $jumlah
+     * @return array
+     * @throws Exception
+     */
+    public static function deduct(int $alatId, int $jumlah): array
     {
-        if ($quantity <= 0) {
-            return;
-        }
+        return DB::transaction(function () use ($alatId, $jumlah) {
+            $alat = Alat::where('id', $alatId)->lockForUpdate()->first();
 
-        $alat = self::lockAlat($alatId);
+            if (!$alat) {
+                throw new Exception("Alat tidak ditemukan.");
+            }
 
-        if ($alat->jumlah_stok < $quantity) {
-            throw ValidationException::withMessages([
-                'total_alat' => 'Stok alat tidak mencukupi untuk jumlah yang diminta.',
-            ]);
-        }
+            $totalTersedia = $alat->baik + $alat->rusak_ringan;
+            if ($totalTersedia < $jumlah) {
+                throw new Exception("Stok tidak mencukupi. Tersedia total (baik + rusak ringan): {$totalTersedia}, Dibutuhkan: {$jumlah}.");
+            }
 
-        $alat->decrement('jumlah_stok', $quantity);
+            $ambilDariBaik = min($alat->baik, $jumlah);
+            $ambilDariRusak = $jumlah - $ambilDariBaik;
+
+            // Kurangi stok
+            $alat->baik -= $ambilDariBaik;
+            $alat->rusak_ringan -= $ambilDariRusak;
+            $alat->jumlah_stok -= $jumlah; // total stok juga berkurang
+            $alat->save();
+
+            return [
+                'baik' => $ambilDariBaik,
+                'rusak' => $ambilDariRusak,
+            ];
+        });
     }
 
-    public static function restore(int $alatId, int $quantity): void
+    /**
+     * Mengembalikan stok alat berdasarkan jumlah yang sebelumnya diambil dari baik dan rusak.
+     *
+     * @param int $alatId
+     * @param int $jumlahBaik
+     * @param int $jumlahRusak
+     * @throws Exception
+     */
+    public static function restore(int $alatId, int $jumlahBaik, int $jumlahRusak): void
     {
-        if ($quantity <= 0) {
-            return;
-        }
+        DB::transaction(function () use ($alatId, $jumlahBaik, $jumlahRusak) {
+            $alat = Alat::where('id', $alatId)->lockForUpdate()->first();
 
-        $alat = self::lockAlat($alatId);
+            if (!$alat) {
+                throw new Exception("Alat tidak ditemukan.");
+            }
 
-        $alat->increment('jumlah_stok', $quantity);
-    }
-
-    private static function lockAlat(int $alatId): Alat
-    {
-        $alat = Alat::whereKey($alatId)->lockForUpdate()->first();
-
-        if (!$alat) {
-            throw ValidationException::withMessages([
-                'alat_id' => 'Data alat tidak ditemukan.',
-            ]);
-        }
-
-        return $alat;
+            $alat->baik += $jumlahBaik;
+            $alat->rusak_ringan += $jumlahRusak;
+            $alat->jumlah_stok += ($jumlahBaik + $jumlahRusak);
+            $alat->save();
+        });
     }
 }

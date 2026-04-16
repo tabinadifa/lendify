@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Petugas\Peminjaman;
 
 use App\Http\Controllers\Controller;
+use App\Models\Alat;
 use App\Models\Peminjaman;
 use App\Services\AlatStockService;
 use Illuminate\Http\Request;
@@ -103,7 +104,7 @@ class PeminjamanController extends Controller
         $validated = $request->validate([
             'status' => ['required', Rule::in($this->allowedStatuses)],
             'alasan_ditolak' => [
-                Rule::requiredIf(fn () => $request->input('status') === 'rejected'),
+                Rule::requiredIf(fn() => $request->input('status') === 'rejected'),
                 'nullable',
                 'string',
                 'max:255',
@@ -114,33 +115,46 @@ class PeminjamanController extends Controller
             return back()->with('info', 'Status peminjaman sudah sesuai.');
         }
 
+        // Jika akan mengubah ke approve, cek ketersediaan stok total (baik + rusak)
+        if ($validated['status'] === 'approve' && $peminjaman->status !== 'approve') {
+            $alat = Alat::find($peminjaman->alat_id);
+            if (!$alat || ($alat->baik + $alat->rusak_ringan) < $peminjaman->total_alat) {
+                return back()->with('error', "Stok alat '{$alat->nama_alat}' tidak mencukupi. Tersedia total (baik + rusak): " . ($alat->baik + $alat->rusak_ringan) . ", Diminta: {$peminjaman->total_alat}.");
+            }
+        }
+
         $previousStatus = $peminjaman->status;
-        $previousAlatId = $peminjaman->alat_id;
-        $previousTotal = $peminjaman->total_alat;
 
-        DB::transaction(function () use (
-            $peminjaman,
-            $validated,
-            $previousStatus,
-            $previousAlatId,
-            $previousTotal
-        ) {
-            if ($previousStatus === 'approve' && $validated['status'] !== 'approve') {
-                AlatStockService::restore($previousAlatId, $previousTotal);
-            }
+        try {
+            DB::transaction(function () use ($peminjaman, $validated, $previousStatus) {
+                // Jika sebelumnya approve dan sekarang tidak approve -> kembalikan stok
+                if ($previousStatus === 'approve' && $validated['status'] !== 'approve') {
+                    AlatStockService::restore(
+                        $peminjaman->alat_id,
+                        $peminjaman->jumlah_dari_baik,
+                        $peminjaman->jumlah_dari_rusak
+                    );
+                }
 
-            $peminjaman->update([
-                'status' => $validated['status'],
-                'alasan_ditolak' => $validated['status'] === 'rejected'
-                    ? ($validated['alasan_ditolak'] ?? null)
-                    : null,
-            ]);
+                // Update status
+                $peminjaman->update([
+                    'status' => $validated['status'],
+                    'alasan_ditolak' => $validated['status'] === 'rejected' ? ($validated['alasan_ditolak'] ?? null) : null,
+                ]);
 
-            if ($validated['status'] === 'approve' && $previousStatus !== 'approve') {
-                AlatStockService::deduct($peminjaman->alat_id, $peminjaman->total_alat);
-            }
-        });
+                // Jika menjadi approve dan sebelumnya tidak approve -> kurangi stok dan simpan rincian
+                if ($validated['status'] === 'approve' && $previousStatus !== 'approve') {
+                    $detail = AlatStockService::deduct($peminjaman->alat_id, $peminjaman->total_alat);
+                    $peminjaman->update([
+                        'jumlah_dari_baik' => $detail['baik'],
+                        'jumlah_dari_rusak' => $detail['rusak'],
+                    ]);
+                }
+            });
 
-        return back()->with('success', 'Status peminjaman berhasil diperbarui.');
+            return back()->with('success', 'Status peminjaman berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+        }
     }
 }

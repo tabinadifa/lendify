@@ -41,6 +41,7 @@
     $tomorrow = now()->addDay()->format('Y-m-d');
     $gambar   = $alat->gambarAlat;
     $gambarUrl = $gambar ? asset($gambar->file_path) : null;
+    $totalTersedia = $alat->baik + $alat->rusak_ringan;
 @endphp
 
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
@@ -97,23 +98,24 @@
                         </td>
                     </tr>
                     <tr>
-                        <th class="text-muted">Stok Baik Tersedia</th>
+                        <th class="text-muted">Stok Tersedia (Baik + Rusak Ringan)</th>
                         <td>
-                            <span class="badge text-bg-{{ $alat->baik > 0 ? 'success' : 'danger' }}">
-                                {{ number_format($alat->baik) }}
+                            <span class="badge text-bg-{{ $totalTersedia > 0 ? 'success' : 'danger' }}">
+                                {{ number_format($totalTersedia) }} unit
                             </span>
                         </td>
                     </tr>
                     @if ($alat->deskripsi)
-                        <tr>
-                            <th class="text-muted">Deskripsi</th>
-                            <td class="text-muted small">{{ $alat->deskripsi }}</td>
-                        </tr>
+                    <tr>
+                        <th class="text-muted">Deskripsi</th>
+                        <td class="text-muted small">{{ $alat->deskripsi }}</td>
+                    </tr>
                     @endif
                 </table>
 
                 <p class="text-muted small mt-3 mb-0">
-                    Hanya alat dengan kondisi <strong>baik</strong> yang dapat dipinjam. Stok rusak ringan dan diperbaiki tidak tersedia untuk peminjaman.
+                    <i class="bi bi-info-circle"></i> Alat dengan kondisi <strong>baik</strong> diprioritaskan terlebih dahulu. 
+                    Jika stok baik tidak mencukupi, sistem akan mengambil dari stok <strong>rusak ringan</strong>.
                 </p>
             </div>
         </div>
@@ -129,9 +131,9 @@
                     <div class="col-md-6">
                         <label for="total_alat" class="form-label">Jumlah Alat</label>
                         <input type="number" id="total_alat" name="total_alat" class="form-control"
-                            min="1" max="{{ $alat->baik }}"
+                            min="1" max="{{ $totalTersedia }}"
                             value="{{ old('total_alat', 1) }}" required>
-                        <small class="text-muted">Maksimal {{ number_format($alat->baik) }} unit (stok baik).</small>
+                        <small class="text-muted">Maksimal {{ number_format($totalTersedia) }} unit (stok baik + rusak ringan).</small>
                     </div>
 
                     <div class="col-md-6">
