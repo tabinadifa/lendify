@@ -71,6 +71,7 @@ class AuthController extends Controller
             'email'    => 'required|email|unique:users',
             'username' => 'required|string|max:100|unique:users',
             'phone'    => 'required|string|max:20',
+            'address'  => 'required|string',
             'password' => ['required', 'confirmed', Password::defaults()],
         ], [
             'email.unique' => 'Email sudah terdaftar, silakan gunakan email lain.',

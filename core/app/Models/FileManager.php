@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class FileManager extends Model
 {
+    use LogsActivity;
+
     protected $table = 'file_managers';
     
     protected $fillable = [

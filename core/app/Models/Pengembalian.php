@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Pengembalian extends Model
 {
-    use \App\Traits\LogsActivity;
+    use LogsActivity;
 
     protected $table = 'pengembalian';
 

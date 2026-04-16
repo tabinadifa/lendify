@@ -129,7 +129,7 @@
 <body>
 
     <div class="header">
-        <h1>&#128196; Log Aktivitas Sistem</h1>
+        <h1>&#128196; Lendify</h1>
         <p>Laporan aktivitas pengguna &mdash; dicetak pada {{ now()->format('d M Y, H:i:s') }}</p>
     </div>
 
