@@ -156,7 +156,7 @@ $today = now()->format('Y-m-d');
 </div>
 @endif
 
-<form action="{{ route('pengembalian.store') }}" method="POST" class="row g-4">
+<form action="{{ route('admin.pengembalian.store') }}" method="POST" class="row g-4">
     @csrf
 
     <select name="peminjaman_id" id="peminjaman_id" class="form-select d-none" aria-hidden="true" tabindex="-1">
@@ -201,8 +201,6 @@ $today = now()->format('Y-m-d');
                         <input type="date" id="tanggal_pengembalian" name="tanggal_pengembalian" class="form-control"
                             value="{{ date('Y-m-d') }}" readonly required>
                     </div>
-
-                    <!-- Kondisi Alat: SELECT -->
                     <div class="col-md-6">
                         <label for="kondisi_alat" class="form-label">Kondisi Alat</label>
                         <select name="kondisi_alat" id="kondisi_alat" class="form-select" required>
@@ -213,8 +211,6 @@ $today = now()->format('Y-m-d');
                             <option value="hilang" {{ old('kondisi_alat') == 'hilang' ? 'selected' : '' }}>Hilang</option>
                         </select>
                     </div>
-
-                    <!-- Denda Kondisi Alat (input manual) -->
                     <div class="col-md-6">
                         <label for="denda_kondisi" class="form-label">Denda Kondisi Alat</label>
                         <div class="input-group">
@@ -224,7 +220,6 @@ $today = now()->format('Y-m-d');
                         </div>
                         <small class="text-muted">Denda karena kerusakan/kehilangan (isi sesuai kondisi).</small>
                     </div>
-
                     <!-- Status Pembayaran Denda -->
                     <div class="col-md-6">
                         <label for="status" class="form-label">Status Pembayaran Denda</label>
@@ -234,8 +229,7 @@ $today = now()->format('Y-m-d');
                             <option value="belum_lunas" {{ old('status') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
                         </select>
                     </div>
-
-                    <!-- Metode Pembayaran: SELECT dengan opsi QRIS -->
+                    <!-- Metode Pembayaran -->
                     <div class="col-md-6">
                         <label for="metode_pembayaran" class="form-label">Metode Pembayaran</label>
                         <select name="metode_pembayaran" id="metode_pembayaran" class="form-select">
@@ -262,9 +256,8 @@ $today = now()->format('Y-m-d');
                             <span class="input-group-text">Rp</span>
                             <input type="text" id="estimasi_total_denda" class="form-control" readonly disabled>
                         </div>
-                        <small class="text-muted" id="info_denda_telat">Denda telat @ Rp2.000/hari.</small>
+                        <small class="text-muted" id="info_denda_telat">Denda telat otomatis @ Rp2.000/hari.</small>
                     </div>
-
                     <div class="col-12">
                         <label for="catatan" class="form-label">Catatan (opsional)</label>
                         <textarea name="catatan" id="catatan" rows="4" class="form-control"
@@ -309,7 +302,7 @@ $today = now()->format('Y-m-d');
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-auto">
-                    <a href="{{ route('pengembalian.list') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('admin.pengembalian.list') }}" class="btn btn-outline-secondary">
                         Batal
                     </a>
                     <button type="submit" class="btn btn-success">

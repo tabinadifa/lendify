@@ -168,7 +168,7 @@ class PengembalianController extends Controller
                 'catatan' => $validated['catatan'] ?? null,
             ]);
 
-            AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat);
+            AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat, 0);
 
             $peminjaman->update([
                 'status' => 'returned',

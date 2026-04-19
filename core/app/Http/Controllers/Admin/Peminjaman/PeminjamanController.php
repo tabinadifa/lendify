@@ -78,48 +78,11 @@ class PeminjamanController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $peminjaman->loadMissing('alat:id,nama_alat', 'peminjam:id,name,username,email');
+        $peminjaman->loadMissing('alat:id,nama_alat', 'peminjam:id,name,username,email,phone,address');
 
         return view('admin.peminjaman.show', [
             'peminjaman' => $peminjaman->load('alat', 'peminjam'),
             'allowedStatuses' => $this->allowedStatuses,
         ]);
-    }
-
-    public function edit(Peminjaman $peminjaman)
-    {
-        if (!Auth::check()) {
-            return redirect()->route('auth.login')
-                ->with('error', 'Silakan login terlebih dahulu.');
-        }
-
-        $peminjaman->loadMissing('alat:id,nama_alat', 'peminjam:id,name');
-
-        return view('admin.peminjaman.edit', [
-            'peminjaman' => $peminjaman->load('peminjam'),
-            'alats' => Alat::select('id', 'nama_alat')->orderBy('nama_alat')->get(),
-            'allowedStatuses' => $this->allowedStatuses,
-        ]);
-    }
-
-    public function destroy(Peminjaman $peminjaman)
-    {
-        if (!Auth::check()) {
-            return redirect()->route('auth.login')
-                ->with('error', 'Silakan login terlebih dahulu.');
-        }
-
-
-        DB::transaction(function () use ($peminjaman) {
-            if ($peminjaman->status === 'approve') {
-                AlatStockService::restore($peminjaman->alat_id, $peminjaman->total_alat);
-            }
-
-            $peminjaman->delete();
-        });
-
-        return redirect()
-            ->route('peminjaman.list')
-            ->with('success', 'Data peminjaman berhasil dihapus.');
     }
 }
