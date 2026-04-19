@@ -156,7 +156,7 @@ $today = now()->format('Y-m-d');
 </div>
 @endif
 
-<form action="{{ route('admin.pengembalian.store') }}" method="POST" class="row g-4">
+<form action="{{ route('pengembalian.store') }}" method="POST" class="row g-4">
     @csrf
 
     <select name="peminjaman_id" id="peminjaman_id" class="form-select d-none" aria-hidden="true" tabindex="-1">
@@ -206,8 +206,8 @@ $today = now()->format('Y-m-d');
                         <select name="kondisi_alat" id="kondisi_alat" class="form-select" required>
                             <option value="">Pilih kondisi</option>
                             <option value="baik" {{ old('kondisi_alat') == 'baik' ? 'selected' : '' }}>Baik</option>
-                            <option value="rusak ringan" {{ old('kondisi_alat') == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
-                            <option value="rusak berat" {{ old('kondisi_alat') == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
+                            <option value="rusak_ringan" {{ old('kondisi_alat') == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
+                            <option value="rusak_berat" {{ old('kondisi_alat') == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
                             <option value="hilang" {{ old('kondisi_alat') == 'hilang' ? 'selected' : '' }}>Hilang</option>
                         </select>
                     </div>
@@ -302,7 +302,7 @@ $today = now()->format('Y-m-d');
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-auto">
-                    <a href="{{ route('admin.pengembalian.list') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('pengembalian.list') }}" class="btn btn-outline-secondary">
                         Batal
                     </a>
                     <button type="submit" class="btn btn-success">

@@ -75,12 +75,14 @@ class PengembalianController extends Controller
     /* =======================
      * FORM CREATE
      * ======================= */
-    public function create()
+    public function create(Request $request)
     {
         if (!Auth::check()) {
             return redirect()->route('auth.login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
+
+        $search = $request->get('search');
 
         $peminjamans = Peminjaman::with([
             'alat:id,nama_alat',
@@ -93,8 +95,17 @@ class PengembalianController extends Controller
             'tanggal_kembali',
             'status'
         )->where('status', 'approve')
+            ->when($search, function ($query, $search) {
+                $query->whereHas('peminjam', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%");
+                })->orWhereHas('alat', function ($q) use ($search) {
+                    $q->where('nama_alat', 'like', "%{$search}%");
+                });
+            })
             ->orderByDesc('tanggal_pinjam')
-            ->get();
+            ->paginate(10) // jumlah per halaman, bisa diatur via request
+            ->appends(['search' => $search]);
 
         return view('petugas.pengembalian.create', [
             'peminjamans' => $peminjamans,

@@ -98,7 +98,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th class="text-muted">Stok Tersedia (Baik + Rusak Ringan)</th>
+                        <th class="text-muted">Stok Tersedia</th>
                         <td>
                             <span class="badge text-bg-{{ $totalTersedia > 0 ? 'success' : 'danger' }}">
                                 {{ number_format($totalTersedia) }} unit
